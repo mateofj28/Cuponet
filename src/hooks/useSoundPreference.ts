@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { isSoundEnabled, setSoundEnabled } from "@/lib/sound"
+import { isSoundEnabled, setSoundEnabled, unlockAudio } from "@/lib/sound"
 
 /** Estado reactivo de la preferencia de sonido (persistida en localStorage). */
 export function useSoundPreference() {
@@ -9,6 +9,8 @@ export function useSoundPreference() {
     setEnabled((prev) => {
       const next = !prev
       setSoundEnabled(next)
+      // Al activar desde un gesto directo, desbloqueamos el audio (iOS).
+      if (next) unlockAudio()
       return next
     })
   }, [])

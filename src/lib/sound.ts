@@ -5,9 +5,9 @@
 const STORAGE_KEY = "cuponet.sound"
 
 let audioCtx: AudioContext | null = null
+let unlocked = false
 
-/** Crea o retoma el AudioContext de forma perezosa (política de autoplay). */
-function getContext(): AudioContext | null {
+function createContext(): AudioContext | null {
   if (typeof window === "undefined") return null
   const Ctor =
     window.AudioContext ||
@@ -15,8 +15,37 @@ function getContext(): AudioContext | null {
       .webkitAudioContext
   if (!Ctor) return null // navegador sin Web Audio: degradación silenciosa
   if (!audioCtx) audioCtx = new Ctor()
-  if (audioCtx.state === "suspended") void audioCtx.resume()
   return audioCtx
+}
+
+/** Retorna el contexto (ya debería estar desbloqueado por unlockAudio). */
+function getContext(): AudioContext | null {
+  const ctx = createContext()
+  if (ctx && ctx.state === "suspended") void ctx.resume()
+  return ctx
+}
+
+/**
+ * Desbloquea el audio dentro de un gesto del usuario (clic/touch).
+ * iOS/Safari exige crear + resumir el AudioContext y reproducir un buffer
+ * mudo durante la primera interacción; recién ahí habilita el audio para
+ * el resto de la sesión. Debe llamarse desde un listener de interacción.
+ */
+export function unlockAudio(): void {
+  if (unlocked) return
+  const ctx = createContext()
+  if (!ctx) return
+
+  void ctx.resume()
+
+  // Buffer de silencio: "despierta" el pipeline de audio en iOS.
+  const buffer = ctx.createBuffer(1, 1, 22050)
+  const source = ctx.createBufferSource()
+  source.buffer = buffer
+  source.connect(ctx.destination)
+  source.start(0)
+
+  unlocked = true
 }
 
 /** ¿El sonido está habilitado? (default: habilitado). */

@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { formatCreditos } from "@/lib/format"
 import type { PlanId } from "@/services"
 
 const NOMBRE_PLAN: Record<PlanId, string> = {
@@ -81,7 +82,9 @@ export function Home() {
         <CardContent className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <Coins className="size-4 text-muted-foreground" />
-            <span className="font-medium">{user?.creditos ?? 0}</span>
+            <span className="font-medium">
+              {formatCreditos(user?.creditos ?? 0)}
+            </span>
             <span className="text-muted-foreground">créditos</span>
           </div>
           <Button asChild size="sm" variant={membresiaActiva ? "outline" : "default"}>

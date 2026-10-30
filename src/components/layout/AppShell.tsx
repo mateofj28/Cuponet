@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { formatCreditos } from "@/lib/format"
 import { useSoundPreference } from "@/hooks/useSoundPreference"
 
 const navItems = [
@@ -49,7 +50,7 @@ export function AppShell() {
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="gap-1">
             <Coins className="size-3.5" />
-            {user?.creditos ?? 0}
+            {formatCreditos(user?.creditos ?? 0)}
           </Badge>
           <Badge
             variant={membresiaActiva ? "default" : "outline"}

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { authService, creditService } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { formatCreditos } from "@/lib/format"
 import { playError, playSuccess } from "@/lib/sound"
 
 export function AdminCreditos() {
@@ -76,7 +77,7 @@ export function AdminCreditos() {
               <SelectContent>
                 {(clientes ?? []).map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    {c.nombre} · {c.creditos} créditos
+                    {c.nombre} · {formatCreditos(c.creditos)} créditos
                   </SelectItem>
                 ))}
               </SelectContent>

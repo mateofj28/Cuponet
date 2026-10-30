@@ -17,6 +17,7 @@ import {
 import { membershipService, type Plan, type PlanId } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { formatCreditos } from "@/lib/format"
 import { playError, playSuccess } from "@/lib/sound"
 
 export function Membresia() {
@@ -74,7 +75,7 @@ export function Membresia() {
         </CardHeader>
         <CardContent className="flex items-center gap-2 text-sm">
           <Coins className="size-4 text-muted-foreground" />
-          <span className="font-medium">{saldo}</span>
+          <span className="font-medium">{formatCreditos(saldo)}</span>
           <span className="text-muted-foreground">créditos disponibles</span>
         </CardContent>
       </Card>
@@ -105,7 +106,7 @@ export function Membresia() {
                     </CardTitle>
                     <div className="flex items-center gap-1 text-sm font-semibold">
                       <Coins className="size-4" />
-                      {plan.costoCreditos}
+                      {formatCreditos(plan.costoCreditos)}
                     </div>
                   </div>
                   <CardDescription>
@@ -129,7 +130,7 @@ export function Membresia() {
                       {procesando
                         ? "Procesando..."
                         : saldoInsuficiente
-                          ? `Faltan ${plan.costoCreditos - saldo} créditos`
+                            ? `Faltan ${formatCreditos(plan.costoCreditos - saldo)} créditos`
                           : membresiaActiva
                             ? "Cambiar a este plan"
                             : "Activar"}

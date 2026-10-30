@@ -18,6 +18,7 @@ import { Countdown } from "@/components/sorteos/Countdown"
 import { raffleService, type Inscripcion, type Sorteo } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { formatCreditos } from "@/lib/format"
 import { playError, playSuccess } from "@/lib/sound"
 
 interface DetalleData {
@@ -131,7 +132,7 @@ export function SorteoDetalle() {
             <span className="text-muted-foreground">Costo por número</span>
             <span className="flex items-center gap-1 font-medium">
               <Coins className="size-4" />
-              {sorteo.costoCreditos}
+              {formatCreditos(sorteo.costoCreditos)}
             </span>
           </div>
           <div className="flex items-center justify-between">

@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatCreditosSigned } from "@/lib/format"
 import type { Movimiento, TipoMovimiento } from "@/services"
 
 const META: Record<TipoMovimiento, { label: string; icon: LucideIcon }> = {
@@ -51,8 +52,7 @@ export function MovimientoItem({
             creditos >= 0 ? "text-success" : "text-destructive"
           )}
         >
-          {creditos >= 0 ? "+" : ""}
-          {creditos}
+          {formatCreditosSigned(creditos)}
         </span>
       )}
     </div>

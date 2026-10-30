@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Countdown } from "@/components/sorteos/Countdown"
+import { formatCreditos } from "@/lib/format"
 import type { Sorteo } from "@/services"
 
 export function RaffleCard({ sorteo }: { sorteo: Sorteo }) {
@@ -26,7 +27,7 @@ export function RaffleCard({ sorteo }: { sorteo: Sorteo }) {
             </div>
             <Badge variant="secondary" className="gap-1">
               <Coins className="size-3.5" />
-              {sorteo.costoCreditos}
+              {formatCreditos(sorteo.costoCreditos)}
             </Badge>
           </div>
         </CardHeader>

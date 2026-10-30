@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { badgeSuccess } from "@/lib/statusBadge"
 import type { PlanId } from "@/services"
 
 const NOMBRE_PLAN: Record<PlanId, string> = {
@@ -32,12 +33,14 @@ const accesos = [
     titulo: "Cupones",
     descripcion: "Descuentos de comercios asociados",
     icon: Ticket,
+    color: "text-accent-cupones",
   },
   {
     to: "/sorteos",
     titulo: "Sorteos",
     descripcion: "Participá y ganá premios",
     icon: Trophy,
+    color: "text-accent-sorteos",
   },
 ] as const
 
@@ -55,7 +58,10 @@ export function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Tu membresía</CardTitle>
-            <Badge variant={membresiaActiva ? "default" : "outline"}>
+            <Badge
+              variant={membresiaActiva ? "default" : "outline"}
+              className={membresiaActiva ? badgeSuccess : undefined}
+            >
               {membresiaActiva ? "Activa" : "Inactiva"}
             </Badge>
           </div>
@@ -88,11 +94,11 @@ export function Home() {
 
       {/* Accesos principales */}
       <div className="grid grid-cols-2 gap-4">
-        {accesos.map(({ to, titulo, descripcion, icon: Icon }) => (
+        {accesos.map(({ to, titulo, descripcion, icon: Icon, color }) => (
           <Link key={to} to={to} className="group">
             <Card className="h-full transition-colors group-hover:border-primary">
               <CardHeader>
-                <Icon className="size-6 text-primary" />
+                <Icon className={`size-6 ${color}`} />
                 <CardTitle className="text-base">{titulo}</CardTitle>
                 <CardDescription className="text-xs">
                   {descripcion}

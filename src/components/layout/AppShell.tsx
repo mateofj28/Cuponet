@@ -6,6 +6,8 @@ import {
   Shield,
   Ticket,
   Trophy,
+  Volume2,
+  VolumeOff,
   History as HistoryIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -13,6 +15,8 @@ import { useAuth } from "@/context/AuthContext"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { badgeSuccess } from "@/lib/statusBadge"
+import { useSoundPreference } from "@/hooks/useSoundPreference"
 
 const navItems = [
   { to: "/", label: "Inicio", icon: Home, end: true },
@@ -24,6 +28,7 @@ const navItems = [
 export function AppShell() {
   const { user, isAdmin, membresiaActiva, logout } = useAuth()
   const navigate = useNavigate()
+  const { enabled: soundOn, toggle: toggleSound } = useSoundPreference()
 
   async function handleLogout() {
     await logout()
@@ -46,9 +51,25 @@ export function AppShell() {
             <Coins className="size-3.5" />
             {user?.creditos ?? 0}
           </Badge>
-          <Badge variant={membresiaActiva ? "default" : "outline"}>
+          <Badge
+            variant={membresiaActiva ? "default" : "outline"}
+            className={membresiaActiva ? badgeSuccess : undefined}
+          >
             {membresiaActiva ? "Activa" : "Sin membresía"}
           </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSound}
+            aria-label={soundOn ? "Silenciar sonidos" : "Activar sonidos"}
+            aria-pressed={soundOn}
+          >
+            {soundOn ? (
+              <Volume2 className="size-4" />
+            ) : (
+              <VolumeOff className="size-4" />
+            )}
+          </Button>
           <Button
             variant="ghost"
             size="icon"

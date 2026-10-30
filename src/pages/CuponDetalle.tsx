@@ -23,6 +23,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { couponService } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { playError, playSuccess } from "@/lib/sound"
 
 export function CuponDetalle() {
   const { id } = useParams<{ id: string }>()
@@ -66,8 +67,10 @@ export function CuponDetalle() {
     setCanjeando(false)
     if (result.ok) {
       setCanjeado(true)
+      playSuccess()
       toast.success("¡Cupón canjeado! Mostralo en el comercio.")
     } else {
+      playError()
       toast.error(result.error)
     }
   }

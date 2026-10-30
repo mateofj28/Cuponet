@@ -17,6 +17,8 @@ import { Separator } from "@/components/ui/separator"
 import { Countdown } from "@/components/sorteos/Countdown"
 import { raffleService, type Inscripcion, type Sorteo } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { badgeSuccess } from "@/lib/statusBadge"
+import { playError, playSuccess } from "@/lib/sound"
 
 interface DetalleData {
   sorteo: Sorteo | null
@@ -71,8 +73,10 @@ export function SorteoDetalle() {
     if (result.ok) {
       await refreshUser()
       reload()
+      playSuccess()
       toast.success(`¡Anotado! Tu número es el ${result.data}.`)
     } else {
+      playError()
       toast.error(result.error)
     }
   }
@@ -90,7 +94,10 @@ export function SorteoDetalle() {
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
             <CardTitle>{sorteo.titulo}</CardTitle>
-            <Badge variant={cerrado ? "outline" : "default"}>
+            <Badge
+              variant={cerrado ? "outline" : "default"}
+              className={cerrado ? undefined : badgeSuccess}
+            >
               {cerrado ? "Cerrado" : "Activo"}
             </Badge>
           </div>

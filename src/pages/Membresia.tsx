@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/card"
 import { membershipService, type Plan, type PlanId } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { badgeSuccess } from "@/lib/statusBadge"
+import { playError, playSuccess } from "@/lib/sound"
 
 export function Membresia() {
   const { user, membresiaActiva, refreshUser } = useAuth()
@@ -35,8 +37,10 @@ export function Membresia() {
     setComprando(null)
     if (result.ok) {
       await refreshUser()
+      playSuccess()
       toast.success(`¡Membresía ${plan.nombre} activada!`)
     } else {
+      playError()
       toast.error(result.error)
     }
   }
@@ -48,7 +52,10 @@ export function Membresia() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Estado</CardTitle>
-            <Badge variant={membresiaActiva ? "default" : "outline"}>
+            <Badge
+              variant={membresiaActiva ? "default" : "outline"}
+              className={membresiaActiva ? badgeSuccess : undefined}
+            >
               {membresiaActiva ? "Activa" : "Sin membresía"}
             </Badge>
           </div>

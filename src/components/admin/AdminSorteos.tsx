@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { raffleService, type Sorteo } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { badgeSuccess } from "@/lib/statusBadge"
 
 const toDateTimeInput = (iso: string) =>
   format(parseISO(iso), "yyyy-MM-dd'T'HH:mm")
@@ -216,7 +217,10 @@ export function AdminSorteos() {
                   {s.productoPrincipal}
                 </p>
               </div>
-              <Badge variant={s.estado === "activo" ? "default" : "outline"}>
+              <Badge
+                variant={s.estado === "activo" ? "default" : "outline"}
+                className={s.estado === "activo" ? badgeSuccess : undefined}
+              >
                 {s.estado}
               </Badge>
               <Button

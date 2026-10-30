@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { authService, creditService } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { playError, playSuccess } from "@/lib/sound"
 
 export function AdminCreditos() {
   const { data: clientes, reload } = useAsync(
@@ -46,10 +47,12 @@ export function AdminCreditos() {
     const result = await creditService.cargar(targetId, cantidad)
     setCargando(false)
     if (result.ok) {
+      playSuccess()
       toast.success("Créditos cargados correctamente.")
       setMonto("")
       reload()
     } else {
+      playError()
       toast.error(result.error)
     }
   }

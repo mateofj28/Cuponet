@@ -20,7 +20,7 @@ export function RaffleCard({ sorteo }: { sorteo: Sorteo }) {
             <div>
               <CardTitle className="text-base">{sorteo.titulo}</CardTitle>
               <CardDescription className="flex items-center gap-1">
-                <Gift className="size-3.5" />
+                <Gift className="size-3.5 text-accent-sorteos" />
                 {sorteo.productoPrincipal}
               </CardDescription>
             </div>

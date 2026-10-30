@@ -48,7 +48,7 @@ export function MovimientoItem({
         <span
           className={cn(
             "shrink-0 text-sm font-semibold tabular-nums",
-            creditos >= 0 ? "text-emerald-600" : "text-destructive"
+            creditos >= 0 ? "text-success" : "text-destructive"
           )}
         >
           {creditos >= 0 ? "+" : ""}

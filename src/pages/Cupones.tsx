@@ -12,7 +12,10 @@ export function Cupones() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <div>
-        <h1 className="text-lg font-semibold">Cupones</h1>
+        <h1 className="flex items-center gap-2 text-lg font-semibold">
+          <Ticket className="size-5 text-accent-cupones" />
+          Cupones
+        </h1>
         <p className="text-sm text-muted-foreground">
           Descuentos vigentes de comercios asociados.
         </p>

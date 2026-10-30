@@ -25,7 +25,9 @@ export function CouponCard({ cupon }: { cupon: CuponConComercio }) {
                 {cupon.comercio?.nombre ?? "Comercio"}
               </CardDescription>
             </div>
-            <Badge variant="secondary">{cupon.descuento}</Badge>
+            <Badge variant="secondary" className="text-accent-cupones">
+              {cupon.descuento}
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground">

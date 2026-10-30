@@ -18,7 +18,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { PLANES } from "@/services"
+import type { PlanId } from "@/services"
+
+const NOMBRE_PLAN: Record<PlanId, string> = {
+  plan1: "Plan 1",
+  plan3: "Plan 3",
+  black: "Plan Black",
+}
 
 const accesos = [
   {
@@ -38,8 +44,8 @@ const accesos = [
 export function Home() {
   const { user, membresiaActiva } = useAuth()
 
-  const plan = user?.membresia
-    ? PLANES.find((p) => p.id === user.membresia?.planId)
+  const planNombre = user?.membresia
+    ? NOMBRE_PLAN[user.membresia.planId]
     : null
 
   return (
@@ -54,9 +60,9 @@ export function Home() {
             </Badge>
           </div>
           <CardDescription>
-            {membresiaActiva && plan && user?.membresia ? (
+            {membresiaActiva && planNombre && user?.membresia ? (
               <>
-                {plan.nombre} · vence el{" "}
+                {planNombre} · vence el{" "}
                 {format(parseISO(user.membresia.expiracion), "d 'de' MMMM yyyy", {
                   locale: es,
                 })}

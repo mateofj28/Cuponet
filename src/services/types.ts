@@ -22,14 +22,16 @@ export interface User {
   id: string
   nombre: string
   email: string
-  password: string // mock: en texto plano, solo para el MVP en memoria
   role: Role
   creditos: number
   membresia: Membership | null
 }
 
-/** Usuario expuesto a la UI, sin campos sensibles. */
-export type PublicUser = Omit<User, "password">
+/**
+ * Usuario expuesto a la UI. Con Supabase Auth las credenciales las maneja
+ * Auth; el perfil (rol, créditos, membresía) vive en la tabla `profiles`.
+ */
+export type PublicUser = User
 
 export interface Comercio {
   id: string

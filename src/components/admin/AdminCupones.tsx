@@ -26,8 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { couponService } from "@/services"
-import type { CuponConComercio } from "@/services/coupon.service"
+import { couponService, type CuponConComercio } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 
 const toDateInput = (iso: string) => format(parseISO(iso), "yyyy-MM-dd")
 
@@ -48,17 +48,19 @@ const emptyForm: FormState = {
 }
 
 export function AdminCupones() {
-  const [cupones, setCupones] = useState(() => couponService.listarTodos())
-  const comercios = couponService.listarComercios()
+  const { data: cupones, reload } = useAsync(
+    () => couponService.listarTodos(),
+    []
+  )
+  const { data: comercios } = useAsync(() => couponService.listarComercios(), [])
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
-
-  const refrescar = () => setCupones(couponService.listarTodos())
+  const [guardando, setGuardando] = useState(false)
 
   function abrirNuevo() {
     setEditId(null)
-    setForm({ ...emptyForm, comercioId: comercios[0]?.id ?? "" })
+    setForm({ ...emptyForm, comercioId: comercios?.[0]?.id ?? "" })
     setOpen(true)
   }
 
@@ -74,7 +76,7 @@ export function AdminCupones() {
     setOpen(true)
   }
 
-  function guardar(e: FormEvent) {
+  async function guardar(e: FormEvent) {
     e.preventDefault()
     const payload = {
       titulo: form.titulo,
@@ -83,24 +85,26 @@ export function AdminCupones() {
       descuento: form.descuento,
       vencimiento: new Date(form.vencimiento).toISOString(),
     }
+    setGuardando(true)
     const result = editId
-      ? couponService.actualizar(editId, payload)
-      : couponService.crear(payload)
+      ? await couponService.actualizar(editId, payload)
+      : await couponService.crear(payload)
+    setGuardando(false)
 
     if (result.ok) {
       toast.success(editId ? "Cupón actualizado." : "Cupón creado.")
       setOpen(false)
-      refrescar()
+      reload()
     } else {
       toast.error(result.error)
     }
   }
 
-  function eliminar(id: string) {
-    const result = couponService.eliminar(id)
+  async function eliminar(id: string) {
+    const result = await couponService.eliminar(id)
     if (result.ok) {
       toast.success("Cupón eliminado.")
-      refrescar()
+      reload()
     } else {
       toast.error(result.error)
     }
@@ -142,7 +146,7 @@ export function AdminCupones() {
                     <SelectValue placeholder="Elegí un comercio" />
                   </SelectTrigger>
                   <SelectContent>
-                    {comercios.map((c) => (
+                    {(comercios ?? []).map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.nombre}
                       </SelectItem>
@@ -183,14 +187,16 @@ export function AdminCupones() {
                 />
               </div>
               <DialogFooter>
-                <Button type="submit">Guardar</Button>
+                <Button type="submit" disabled={guardando}>
+                  {guardando ? "Guardando..." : "Guardar"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent className="divide-y p-0">
-        {cupones.length === 0 ? (
+        {!cupones || cupones.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
             No hay cupones cargados.
           </p>

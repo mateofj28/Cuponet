@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react"
 import { Coins } from "lucide-react"
 import { toast } from "sonner"
-import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,16 +18,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { authService, creditService } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 
 export function AdminCreditos() {
-  const { user, refreshUser } = useAuth()
-  const [clientes, setClientes] = useState(() => authService.listarClientes())
+  const { data: clientes, reload } = useAsync(
+    () => authService.listarClientes(),
+    []
+  )
   const [targetId, setTargetId] = useState("")
   const [monto, setMonto] = useState("")
+  const [cargando, setCargando] = useState(false)
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!user) return
 
     const cantidad = Number(monto)
     if (!targetId) {
@@ -40,12 +42,13 @@ export function AdminCreditos() {
       return
     }
 
-    const result = creditService.cargar(user.id, targetId, cantidad)
+    setCargando(true)
+    const result = await creditService.cargar(targetId, cantidad)
+    setCargando(false)
     if (result.ok) {
-      toast.success(`Créditos cargados. Nuevo saldo: ${result.data}.`)
+      toast.success("Créditos cargados correctamente.")
       setMonto("")
-      setClientes(authService.listarClientes())
-      if (targetId === user.id) refreshUser()
+      reload()
     } else {
       toast.error(result.error)
     }
@@ -68,7 +71,7 @@ export function AdminCreditos() {
                 <SelectValue placeholder="Elegí un cliente" />
               </SelectTrigger>
               <SelectContent>
-                {clientes.map((c) => (
+                {(clientes ?? []).map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.nombre} · {c.creditos} créditos
                   </SelectItem>
@@ -87,7 +90,9 @@ export function AdminCreditos() {
               onChange={(e) => setMonto(e.target.value)}
             />
           </div>
-          <Button type="submit">Cargar</Button>
+          <Button type="submit" disabled={cargando}>
+            {cargando ? "Cargando..." : "Cargar"}
+          </Button>
         </form>
       </CardContent>
     </Card>

@@ -1,148 +1,129 @@
-import { isAfter, parseISO } from "date-fns"
+import { supabase } from "@/lib/supabase"
 import type { Inscripcion, ServiceResult, Sorteo } from "./types"
-import { findUser, genId, store } from "./store"
-import { esMembresiaActiva } from "./membership.service"
-import { descontar } from "./credit.service"
-import { registrarMovimiento } from "./movimientos"
+import {
+  mapInscripcion,
+  mapSorteo,
+  type InscripcionRow,
+  type SorteoRow,
+} from "./mappers"
+import { fail, ok, toErrorMessage } from "./result"
 
-/** Marca como cerrado cualquier sorteo cuya fecha de cierre ya pasó (R4.5). */
-function sincronizarEstados(): void {
-  const now = new Date()
-  for (const sorteo of store.sorteos) {
-    if (sorteo.estado === "activo" && !isAfter(parseISO(sorteo.cierre), now)) {
-      sorteo.estado = "cerrado"
-    }
-  }
+const SELECT_SORTEO =
+  "id, titulo, producto_principal, productos_secundarios, cierre, numeros_en_juego, costo_creditos, estado"
+
+/** R4.1: sorteos activos (y aún no vencidos). */
+export async function listarActivos(): Promise<Sorteo[]> {
+  const { data, error } = await supabase
+    .from("sorteos")
+    .select(SELECT_SORTEO)
+    .eq("estado", "activo")
+    .gt("cierre", new Date().toISOString())
+    .order("cierre")
+
+  if (error || !data) return []
+  return (data as SorteoRow[]).map(mapSorteo)
 }
 
-/** R4.1: lista los sorteos activos (tras sincronizar los que ya cerraron). */
-export function listarActivos(): Sorteo[] {
-  sincronizarEstados()
-  return store.sorteos.filter((s) => s.estado === "activo")
+export async function getById(id: string): Promise<Sorteo | null> {
+  const { data, error } = await supabase
+    .from("sorteos")
+    .select(SELECT_SORTEO)
+    .eq("id", id)
+    .maybeSingle<SorteoRow>()
+
+  if (error || !data) return null
+  return mapSorteo(data)
 }
 
-/** Detalle de un sorteo por id. */
-export function getById(id: string): Sorteo | null {
-  sincronizarEstados()
-  return store.sorteos.find((s) => s.id === id) ?? null
-}
-
-/** Números que un usuario tiene asignados en un sorteo. */
-export function getInscripcion(
+/** Inscripción propia del usuario en un sorteo (RLS: solo la suya). */
+export async function getInscripcion(
   userId: string,
   sorteoId: string
-): Inscripcion | null {
-  return (
-    store.inscripciones.find(
-      (i) => i.userId === userId && i.sorteoId === sorteoId
-    ) ?? null
-  )
+): Promise<Inscripcion | null> {
+  const { data, error } = await supabase
+    .from("inscripciones")
+    .select("id, sorteo_id, user_id, numeros")
+    .eq("user_id", userId)
+    .eq("sorteo_id", sorteoId)
+    .maybeSingle<InscripcionRow>()
+
+  if (error || !data) return null
+  return mapInscripcion(data)
 }
 
-/** Cantidad de números ya asignados en un sorteo. */
-function numerosAsignados(sorteoId: string): number {
-  return store.inscripciones
-    .filter((i) => i.sorteoId === sorteoId)
-    .reduce((acc, i) => acc + i.numeros.length, 0)
-}
-
-/**
- * R4.2/R4.3/R4.5: inscribe al usuario en un sorteo.
- * Requiere membresía activa, sorteo activo y créditos suficientes.
- * Descuenta créditos y asigna un número (definido por el sistema).
- */
-export function inscribir(
-  userId: string,
+/** R4.2/R4.3: inscripción vía RPC. Devuelve el número asignado. */
+export async function inscribir(
   sorteoId: string
-): ServiceResult<Inscripcion> {
-  const user = findUser(userId)
-  if (!user) return { ok: false, error: "Usuario no encontrado." }
-
-  if (!esMembresiaActiva(user.membresia)) {
-    return {
-      ok: false,
-      error: "Necesitás una membresía activa para participar en sorteos.",
-    }
-  }
-
-  sincronizarEstados()
-  const sorteo = store.sorteos.find((s) => s.id === sorteoId)
-  if (!sorteo) return { ok: false, error: "Sorteo no encontrado." }
-  if (sorteo.estado !== "activo") {
-    return { ok: false, error: "Este sorteo ya está cerrado." }
-  }
-
-  const asignados = numerosAsignados(sorteoId)
-  if (asignados >= sorteo.numerosEnJuego) {
-    return { ok: false, error: "No quedan números disponibles." }
-  }
-
-  const descuentoResult = descontar(userId, sorteo.costoCreditos)
-  if (!descuentoResult.ok) return descuentoResult
-
-  // Número asignado por el sistema (secuencial sobre los ya tomados).
-  const nuevoNumero = asignados + 1
-
-  const existente = getInscripcion(userId, sorteoId)
-  let inscripcion: Inscripcion
-  if (existente) {
-    existente.numeros.push(nuevoNumero)
-    inscripcion = existente
-  } else {
-    inscripcion = {
-      id: genId("insc"),
-      sorteoId,
-      userId,
-      numeros: [nuevoNumero],
-    }
-    store.inscripciones.push(inscripcion)
-  }
-
-  registrarMovimiento({
-    userId: user.id,
-    tipo: "inscripcion_sorteo",
-    detalle: `Inscripción en "${sorteo.titulo}" (número ${nuevoNumero})`,
-    creditos: -sorteo.costoCreditos,
+): Promise<ServiceResult<number>> {
+  const { data, error } = await supabase.rpc("inscribir_sorteo", {
+    p_sorteo_id: sorteoId,
   })
-
-  return { ok: true, data: inscripcion }
+  if (error) return fail(toErrorMessage(error))
+  return ok(data as number)
 }
 
-/** R7.4: cierra manualmente un sorteo (admin). */
-export function cerrar(sorteoId: string): ServiceResult {
-  const sorteo = store.sorteos.find((s) => s.id === sorteoId)
-  if (!sorteo) return { ok: false, error: "Sorteo no encontrado." }
-  sorteo.estado = "cerrado"
-  return { ok: true, data: undefined }
+// ---- Administración ----
+
+export async function listarTodos(): Promise<Sorteo[]> {
+  const { data, error } = await supabase
+    .from("sorteos")
+    .select(SELECT_SORTEO)
+    .order("created_at", { ascending: false })
+
+  if (error || !data) return []
+  return (data as SorteoRow[]).map(mapSorteo)
 }
 
-// ---- Operaciones de administración (R7.4) ----
-
-/** Lista todos los sorteos (activos y cerrados) para el panel admin. */
-export function listarTodos(): Sorteo[] {
-  sincronizarEstados()
-  return [...store.sorteos]
+export interface SorteoInput {
+  titulo: string
+  productoPrincipal: string
+  productosSecundarios: string[]
+  cierre: string
+  numerosEnJuego: number
+  costoCreditos: number
 }
 
-export type SorteoInput = Omit<Sorteo, "id" | "estado">
-
-export function crear(input: SorteoInput): ServiceResult<Sorteo> {
-  if (!input.titulo.trim() || !input.productoPrincipal.trim()) {
-    return { ok: false, error: "Título y producto principal son obligatorios." }
-  }
-  const sorteo: Sorteo = { id: genId("sorteo"), estado: "activo", ...input }
-  store.sorteos.push(sorteo)
-  return { ok: true, data: sorteo }
+export async function crear(input: SorteoInput): Promise<ServiceResult> {
+  const { error } = await supabase.from("sorteos").insert({
+    titulo: input.titulo,
+    producto_principal: input.productoPrincipal,
+    productos_secundarios: input.productosSecundarios,
+    cierre: input.cierre,
+    numeros_en_juego: input.numerosEnJuego,
+    costo_creditos: input.costoCreditos,
+  })
+  if (error) return fail(toErrorMessage(error, "No se pudo crear el sorteo."))
+  return ok(undefined)
 }
 
-export function actualizar(
+export async function actualizar(
   id: string,
   input: Partial<SorteoInput>
-): ServiceResult<Sorteo> {
-  const sorteo = store.sorteos.find((s) => s.id === id)
-  if (!sorteo) return { ok: false, error: "Sorteo no encontrado." }
-  Object.assign(sorteo, input)
-  return { ok: true, data: sorteo }
+): Promise<ServiceResult> {
+  const payload: Record<string, unknown> = {}
+  if (input.titulo !== undefined) payload.titulo = input.titulo
+  if (input.productoPrincipal !== undefined)
+    payload.producto_principal = input.productoPrincipal
+  if (input.productosSecundarios !== undefined)
+    payload.productos_secundarios = input.productosSecundarios
+  if (input.cierre !== undefined) payload.cierre = input.cierre
+  if (input.numerosEnJuego !== undefined)
+    payload.numeros_en_juego = input.numerosEnJuego
+  if (input.costoCreditos !== undefined)
+    payload.costo_creditos = input.costoCreditos
+
+  const { error } = await supabase.from("sorteos").update(payload).eq("id", id)
+  if (error) return fail(toErrorMessage(error, "No se pudo actualizar el sorteo."))
+  return ok(undefined)
+}
+
+export async function cerrar(id: string): Promise<ServiceResult> {
+  const { error } = await supabase
+    .from("sorteos")
+    .update({ estado: "cerrado" })
+    .eq("id", id)
+  if (error) return fail(toErrorMessage(error, "No se pudo cerrar el sorteo."))
+  return ok(undefined)
 }
 
 export const raffleService = {
@@ -150,8 +131,8 @@ export const raffleService = {
   getById,
   getInscripcion,
   inscribir,
-  cerrar,
   listarTodos,
   crear,
   actualizar,
+  cerrar,
 }

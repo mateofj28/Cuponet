@@ -1,12 +1,16 @@
-import { History as HistoryIcon } from "lucide-react"
+import { History as HistoryIcon, Loader2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { Card, CardContent } from "@/components/ui/card"
 import { MovimientoItem } from "@/components/historial/MovimientoItem"
 import { historyService } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 
 export function Historial() {
   const { user } = useAuth()
-  const movimientos = user ? historyService.listarPorUsuario(user.id) : []
+  const { data: movimientos, loading } = useAsync(
+    () => (user ? historyService.listarPorUsuario(user.id) : Promise.resolve([])),
+    [user?.id]
+  )
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -17,7 +21,11 @@ export function Historial() {
         </p>
       </div>
 
-      {movimientos.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : !movimientos || movimientos.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground">
           <HistoryIcon className="size-8" />
           <p className="text-sm">Todavía no tenés movimientos.</p>

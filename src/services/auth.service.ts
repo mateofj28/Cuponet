@@ -1,70 +1,113 @@
-import type { PublicUser, ServiceResult, User } from "./types"
-import { findUser, genId, store, toPublicUser } from "./store"
+import type { User as AuthUser } from "@supabase/supabase-js"
+import { supabase } from "@/lib/supabase"
+import type { PublicUser, ServiceResult } from "./types"
+import {
+  mapUser,
+  type MembershipRow,
+  type ProfileRow,
+} from "./mappers"
+import { fail, ok, toErrorMessage } from "./result"
 
-/** R1: registro de un nuevo usuario con rol "cliente" por defecto. */
-export function register(params: {
+/**
+ * Carga el perfil + membresía vigente de un usuario de Auth y arma el
+ * PublicUser. La membresía vigente es la de mayor expiración.
+ */
+async function cargarPerfil(authUser: AuthUser): Promise<PublicUser | null> {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, nombre, role, creditos")
+    .eq("id", authUser.id)
+    .single<ProfileRow>()
+
+  if (error || !profile) return null
+
+  const { data: membership } = await supabase
+    .from("memberships")
+    .select("plan_id, inicio, expiracion")
+    .eq("user_id", authUser.id)
+    .order("expiracion", { ascending: false })
+    .limit(1)
+    .maybeSingle<MembershipRow>()
+
+  return mapUser(profile, authUser.email ?? "", membership ?? null)
+}
+
+/** RS3.1: registro. El perfil lo crea el trigger handle_new_user. */
+export async function register(params: {
   nombre: string
   email: string
   password: string
-}): ServiceResult<PublicUser> {
+}): Promise<ServiceResult<PublicUser>> {
   const email = params.email.trim().toLowerCase()
-
   if (!params.nombre.trim() || !email || !params.password) {
-    return { ok: false, error: "Completá todos los campos." }
-  }
-  if (store.users.some((u) => u.email.toLowerCase() === email)) {
-    return { ok: false, error: "Ya existe una cuenta con ese email." }
+    return fail("Completá todos los campos.")
   }
 
-  const user: User = {
-    id: genId("u"),
-    nombre: params.nombre.trim(),
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: params.password,
-    role: "cliente", // rol por defecto
-    creditos: 0, // usuarios nuevos arrancan en 0 (solo el admin carga créditos)
-    membresia: null,
-  }
-  store.users.push(user)
-  store.currentUserId = user.id
-  return { ok: true, data: toPublicUser(user) }
+    options: { data: { nombre: params.nombre.trim() } },
+  })
+  if (error) return fail(toErrorMessage(error, "No se pudo crear la cuenta."))
+  if (!data.user) return fail("No se pudo crear la cuenta.")
+
+  const perfil = await cargarPerfil(data.user)
+  return perfil ? ok(perfil) : fail("Cuenta creada, pero no se pudo cargar el perfil.")
 }
 
-/** R1: inicio de sesión con credenciales. */
-export function login(
+/** RS3.2: inicio de sesión. */
+export async function login(
   email: string,
   password: string
-): ServiceResult<PublicUser> {
-  const normalized = email.trim().toLowerCase()
-  const user = store.users.find((u) => u.email.toLowerCase() === normalized)
+): Promise<ServiceResult<PublicUser>> {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  })
+  if (error) return fail("Email o contraseña incorrectos.")
+  if (!data.user) return fail("No se pudo iniciar sesión.")
 
-  if (!user || user.password !== password) {
-    return { ok: false, error: "Email o contraseña incorrectos." }
-  }
-
-  store.currentUserId = user.id
-  return { ok: true, data: toPublicUser(user) }
+  const perfil = await cargarPerfil(data.user)
+  return perfil ? ok(perfil) : fail("No se pudo cargar tu perfil.")
 }
 
-export function logout(): void {
-  store.currentUserId = null
+export async function logout(): Promise<void> {
+  await supabase.auth.signOut()
 }
 
-/** Lista de usuarios (para el panel admin), sin passwords. */
-export function listarUsuarios(): PublicUser[] {
-  return store.users.map(toPublicUser)
+/** RS3.3/RS3.6: usuario autenticado actual (sesión + perfil), o null. */
+export async function getCurrentUser(): Promise<PublicUser | null> {
+  const { data } = await supabase.auth.getUser()
+  if (!data.user) return null
+  return cargarPerfil(data.user)
 }
 
-/** Lista solo los clientes (destino de carga de créditos). */
-export function listarClientes(): PublicUser[] {
-  return store.users.filter((u) => u.role === "cliente").map(toPublicUser)
+/** Suscripción a cambios de sesión (login/logout/refresh). */
+export function onAuthChange(callback: () => void): () => void {
+  const { data } = supabase.auth.onAuthStateChange(() => callback())
+  return () => data.subscription.unsubscribe()
 }
 
-/** Devuelve el usuario autenticado actual (sin password), o null. */
-export function getCurrentUser(): PublicUser | null {
-  if (!store.currentUserId) return null
-  const user = findUser(store.currentUserId)
-  return user ? toPublicUser(user) : null
+export interface ClienteLite {
+  id: string
+  nombre: string
+  creditos: number
+}
+
+/** RS4: listado de clientes para el panel admin (RLS permite al admin leer todos). */
+export async function listarClientes(): Promise<ClienteLite[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, nombre, creditos")
+    .eq("role", "cliente")
+    .order("nombre")
+
+  if (error || !data) return []
+  return data.map((r) => ({
+    id: r.id as string,
+    nombre: r.nombre as string,
+    creditos: r.creditos as number,
+  }))
 }
 
 export const authService = {
@@ -72,6 +115,6 @@ export const authService = {
   login,
   logout,
   getCurrentUser,
-  listarUsuarios,
+  onAuthChange,
   listarClientes,
 }

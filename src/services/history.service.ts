@@ -1,20 +1,30 @@
-import { compareDesc, parseISO } from "date-fns"
+import { supabase } from "@/lib/supabase"
 import type { Movimiento } from "./types"
-import { store } from "./store"
+import { mapMovimiento, type MovimientoRow } from "./mappers"
 
-const porFechaDesc = (a: Movimiento, b: Movimiento) =>
-  compareDesc(parseISO(a.fecha), parseISO(b.fecha))
+const SELECT_MOV = "id, user_id, tipo, fecha, detalle, creditos"
 
 /** R6: movimientos de un usuario, del más reciente al más antiguo. */
-export function listarPorUsuario(userId: string): Movimiento[] {
-  return store.movimientos
-    .filter((m) => m.userId === userId)
-    .sort(porFechaDesc)
+export async function listarPorUsuario(userId: string): Promise<Movimiento[]> {
+  const { data, error } = await supabase
+    .from("movimientos")
+    .select(SELECT_MOV)
+    .eq("user_id", userId)
+    .order("fecha", { ascending: false })
+
+  if (error || !data) return []
+  return (data as MovimientoRow[]).map(mapMovimiento)
 }
 
-/** R7.5: historial global de la plataforma (admin). */
-export function listarGlobal(): Movimiento[] {
-  return [...store.movimientos].sort(porFechaDesc)
+/** R7.5: historial global de la plataforma (RLS: solo admin lee todo). */
+export async function listarGlobal(): Promise<Movimiento[]> {
+  const { data, error } = await supabase
+    .from("movimientos")
+    .select(SELECT_MOV)
+    .order("fecha", { ascending: false })
+
+  if (error || !data) return []
+  return (data as MovimientoRow[]).map(mapMovimiento)
 }
 
 export const historyService = { listarPorUsuario, listarGlobal }

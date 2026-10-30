@@ -22,8 +22,9 @@ export function Registro() {
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
 
@@ -40,7 +41,10 @@ export function Registro() {
       return
     }
 
-    const result = register(nombre, email, password)
+    setSubmitting(true)
+    const result = await register(nombre, email, password)
+    setSubmitting(false)
+
     if (result.ok) {
       toast.success("Cuenta creada. ¡Bienvenido/a!")
       navigate("/", { replace: true })
@@ -112,8 +116,8 @@ export function Registro() {
             )}
           </CardContent>
           <CardFooter className="mt-4 flex flex-col gap-3">
-            <Button type="submit" className="w-full">
-              Crear cuenta
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Creando..." : "Crear cuenta"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               ¿Ya tenés cuenta?{" "}

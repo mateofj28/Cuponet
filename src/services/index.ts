@@ -1,8 +1,11 @@
 export * from "./types"
-export { authService } from "./auth.service"
+export { authService, type ClienteLite } from "./auth.service"
 export { creditService } from "./credit.service"
 export { membershipService } from "./membership.service"
-export { couponService } from "./coupon.service"
-export { raffleService } from "./raffle.service"
+export {
+    couponService,
+    type CuponConComercio,
+    type CuponInput,
+} from "./coupon.service"
+export { raffleService, type SorteoInput } from "./raffle.service"
 export { historyService } from "./history.service"
-export { PLANES, SALDO_REGALO_INICIAL } from "./mockData"

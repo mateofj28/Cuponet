@@ -2,9 +2,14 @@ import { useMemo, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import { format, isAfter, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
-import { ArrowLeft, CheckCircle2, ExternalLink, Store } from "lucide-react"
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Store,
+} from "lucide-react"
 import { toast } from "sonner"
-import { useAuth } from "@/context/AuthContext"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,17 +22,29 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { couponService } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 
 export function CuponDetalle() {
   const { id } = useParams<{ id: string }>()
-  const { user } = useAuth()
-  const cupon = useMemo(() => (id ? couponService.getById(id) : null), [id])
-  const vencido = useMemo(
-    () =>
-      cupon ? !isAfter(parseISO(cupon.vencimiento), new Date()) : false,
-    [cupon]
+  const { data: cupon, loading } = useAsync(
+    () => (id ? couponService.getById(id) : Promise.resolve(null)),
+    [id]
   )
   const [canjeado, setCanjeado] = useState(false)
+  const [canjeando, setCanjeando] = useState(false)
+
+  const vencido = useMemo(
+    () => (cupon ? !isAfter(parseISO(cupon.vencimiento), new Date()) : false),
+    [cupon]
+  )
+
+  if (loading) {
+    return (
+      <div className="flex justify-center p-16">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   if (!cupon) {
     return (
@@ -42,9 +59,11 @@ export function CuponDetalle() {
     )
   }
 
-  function canjear() {
-    if (!user || !cupon) return
-    const result = couponService.canjear(user.id, cupon.id)
+  async function canjear() {
+    if (!cupon) return
+    setCanjeando(true)
+    const result = await couponService.canjear(cupon.id)
+    setCanjeando(false)
     if (result.ok) {
       setCanjeado(true)
       toast.success("¡Cupón canjeado! Mostralo en el comercio.")
@@ -110,8 +129,16 @@ export function CuponDetalle() {
               Canjeado
             </Button>
           ) : (
-            <Button className="w-full" onClick={canjear} disabled={vencido}>
-              {vencido ? "Cupón vencido" : "Canjear cupón"}
+              <Button
+                className="w-full"
+                onClick={canjear}
+                disabled={vencido || canjeando}
+              >
+                {canjeando
+                  ? "Canjeando..."
+                  : vencido
+                    ? "Cupón vencido"
+                    : "Canjear cupón"}
             </Button>
           )}
         </CardFooter>

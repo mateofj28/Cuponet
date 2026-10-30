@@ -1,9 +1,13 @@
-import { Trophy } from "lucide-react"
+import { Loader2, Trophy } from "lucide-react"
 import { raffleService } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 import { RaffleCard } from "@/components/sorteos/RaffleCard"
 
 export function Sorteos() {
-  const sorteos = raffleService.listarActivos()
+  const { data: sorteos, loading } = useAsync(
+    () => raffleService.listarActivos(),
+    []
+  )
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -14,7 +18,11 @@ export function Sorteos() {
         </p>
       </div>
 
-      {sorteos.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : !sorteos || sorteos.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground">
           <Trophy className="size-8" />
           <p className="text-sm">No hay sorteos activos en este momento.</p>

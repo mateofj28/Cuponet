@@ -1,9 +1,13 @@
-import { Ticket } from "lucide-react"
+import { Loader2, Ticket } from "lucide-react"
 import { couponService } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 import { CouponCard } from "@/components/cupones/CouponCard"
 
 export function Cupones() {
-  const cupones = couponService.listarVigentes()
+  const { data: cupones, loading } = useAsync(
+    () => couponService.listarVigentes(),
+    []
+  )
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -14,7 +18,11 @@ export function Cupones() {
         </p>
       </div>
 
-      {cupones.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : !cupones || cupones.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground">
           <Ticket className="size-8" />
           <p className="text-sm">Por ahora no hay cupones disponibles.</p>

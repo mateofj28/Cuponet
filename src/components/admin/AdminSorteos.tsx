@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { raffleService } from "@/services"
-import type { Sorteo } from "@/services"
+import { raffleService, type Sorteo } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
 
 const toDateTimeInput = (iso: string) =>
   format(parseISO(iso), "yyyy-MM-dd'T'HH:mm")
@@ -45,12 +45,14 @@ const emptyForm = (): FormState => ({
 })
 
 export function AdminSorteos() {
-  const [sorteos, setSorteos] = useState(() => raffleService.listarTodos())
+  const { data: sorteos, reload } = useAsync(
+    () => raffleService.listarTodos(),
+    []
+  )
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
-
-  const refrescar = () => setSorteos(raffleService.listarTodos())
+  const [guardando, setGuardando] = useState(false)
 
   function abrirNuevo() {
     setEditId(null)
@@ -71,7 +73,7 @@ export function AdminSorteos() {
     setOpen(true)
   }
 
-  function guardar(e: FormEvent) {
+  async function guardar(e: FormEvent) {
     e.preventDefault()
     const payload = {
       titulo: form.titulo,
@@ -84,24 +86,26 @@ export function AdminSorteos() {
       numerosEnJuego: Number(form.numerosEnJuego) || 0,
       costoCreditos: Number(form.costoCreditos) || 0,
     }
+    setGuardando(true)
     const result = editId
-      ? raffleService.actualizar(editId, payload)
-      : raffleService.crear(payload)
+      ? await raffleService.actualizar(editId, payload)
+      : await raffleService.crear(payload)
+    setGuardando(false)
 
     if (result.ok) {
       toast.success(editId ? "Sorteo actualizado." : "Sorteo creado.")
       setOpen(false)
-      refrescar()
+      reload()
     } else {
       toast.error(result.error)
     }
   }
 
-  function cerrar(id: string) {
-    const result = raffleService.cerrar(id)
+  async function cerrar(id: string) {
+    const result = await raffleService.cerrar(id)
     if (result.ok) {
       toast.success("Sorteo cerrado.")
-      refrescar()
+      reload()
     } else {
       toast.error(result.error)
     }
@@ -190,14 +194,16 @@ export function AdminSorteos() {
                 />
               </div>
               <DialogFooter>
-                <Button type="submit">Guardar</Button>
+                <Button type="submit" disabled={guardando}>
+                  {guardando ? "Guardando..." : "Guardar"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent className="divide-y p-0">
-        {sorteos.length === 0 ? (
+        {!sorteos || sorteos.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
             No hay sorteos cargados.
           </p>

@@ -25,8 +25,8 @@ export function AppShell() {
   const { user, isAdmin, membresiaActiva, logout } = useAuth()
   const navigate = useNavigate()
 
-  function handleLogout() {
-    logout()
+  async function handleLogout() {
+    await logout()
     toast.success("Sesión cerrada")
     navigate("/login", { replace: true })
   }

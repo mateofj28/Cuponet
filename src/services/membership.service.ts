@@ -1,54 +1,32 @@
-import { addMonths, isAfter, parseISO } from "date-fns"
+import { supabase } from "@/lib/supabase"
 import type { Membership, Plan, PlanId, ServiceResult } from "./types"
-import { PLANES } from "./mockData"
-import { findUser } from "./store"
-import { descontar } from "./credit.service"
-import { registrarMovimiento } from "./movimientos"
+import { mapPlan, type PlanRow } from "./mappers"
+import { fail, ok, toErrorMessage } from "./result"
 
-/** R2: devuelve los planes disponibles. */
-export function getPlanes(): Plan[] {
-  return PLANES
+/** RS2: planes disponibles. */
+export async function getPlanes(): Promise<Plan[]> {
+  const { data, error } = await supabase
+    .from("planes")
+    .select("id, nombre, meses, costo_creditos")
+    .order("costo_creditos")
+
+  if (error || !data) return []
+  return (data as PlanRow[]).map(mapPlan)
 }
 
 /** Indica si una membresía está activa en la fecha actual. */
 export function esMembresiaActiva(membresia: Membership | null): boolean {
   if (!membresia) return false
-  return isAfter(parseISO(membresia.expiracion), new Date())
+  return new Date(membresia.expiracion).getTime() > Date.now()
 }
 
-/**
- * R2: compra de un plan pagando con créditos.
- * Descuenta el costo, activa la membresía y registra el movimiento.
- */
-export function comprarPlan(
-  userId: string,
-  planId: PlanId
-): ServiceResult<Membership> {
-  const user = findUser(userId)
-  if (!user) return { ok: false, error: "Usuario no encontrado." }
-
-  const plan = PLANES.find((p) => p.id === planId)
-  if (!plan) return { ok: false, error: "Plan inválido." }
-
-  const descuentoResult = descontar(userId, plan.costoCreditos)
-  if (!descuentoResult.ok) return descuentoResult
-
-  const inicio = new Date()
-  const membresia: Membership = {
-    planId: plan.id,
-    inicio: inicio.toISOString(),
-    expiracion: addMonths(inicio, plan.meses).toISOString(),
-  }
-  user.membresia = membresia
-
-  registrarMovimiento({
-    userId: user.id,
-    tipo: "compra_membresia",
-    detalle: `Compra de ${plan.nombre} (${plan.meses} mes/es)`,
-    creditos: -plan.costoCreditos,
+/** RS5: compra de un plan pagando con créditos (vía RPC atómica). */
+export async function comprarPlan(planId: PlanId): Promise<ServiceResult> {
+  const { error } = await supabase.rpc("comprar_membresia", {
+    p_plan_id: planId,
   })
-
-  return { ok: true, data: membresia }
+  if (error) return fail(toErrorMessage(error))
+  return ok(undefined)
 }
 
 export const membershipService = {

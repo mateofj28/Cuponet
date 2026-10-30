@@ -20,8 +20,9 @@ export function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
 
@@ -30,7 +31,10 @@ export function Login() {
       return
     }
 
-    const result = login(email, password)
+    setSubmitting(true)
+    const result = await login(email, password)
+    setSubmitting(false)
+
     if (result.ok) {
       toast.success("Sesión iniciada")
       navigate("/", { replace: true })
@@ -85,8 +89,8 @@ export function Login() {
             )}
           </CardContent>
           <CardFooter className="mt-4 flex flex-col gap-3">
-            <Button type="submit" className="w-full">
-              Entrar
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Entrando..." : "Entrar"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               ¿No tenés cuenta?{" "}

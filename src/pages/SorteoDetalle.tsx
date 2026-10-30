@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from "react"
+import { useState } from "react"
 import { Link, useParams } from "react-router-dom"
-import { ArrowLeft, Clock, Coins, Gift, Hash } from "lucide-react"
+import { ArrowLeft, Clock, Coins, Gift, Hash, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/context/AuthContext"
 import { Badge } from "@/components/ui/badge"
@@ -15,28 +15,38 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Countdown } from "@/components/sorteos/Countdown"
-import { raffleService } from "@/services"
+import { raffleService, type Inscripcion, type Sorteo } from "@/services"
+import { useAsync } from "@/hooks/useAsync"
+
+interface DetalleData {
+  sorteo: Sorteo | null
+  inscripcion: Inscripcion | null
+}
 
 export function SorteoDetalle() {
   const { id } = useParams<{ id: string }>()
   const { user, refreshUser } = useAuth()
+  const [inscribiendo, setInscribiendo] = useState(false)
 
-  // version fuerza re-lectura del servicio tras inscribir o cerrar
-  const [version, setVersion] = useState(0)
-  const refrescar = useCallback(() => setVersion((v) => v + 1), [])
+  const { data, loading, reload } = useAsync<DetalleData>(async () => {
+    if (!id) return { sorteo: null, inscripcion: null }
+    const [sorteo, inscripcion] = await Promise.all([
+      raffleService.getById(id),
+      user ? raffleService.getInscripcion(user.id, id) : Promise.resolve(null),
+    ])
+    return { sorteo, inscripcion }
+  }, [id, user?.id])
 
-  // `version` fuerza la re-lectura del servicio mutable (no reactivo) tras
-  // inscribir o al cerrar el sorteo; por eso está en las dependencias.
-  const sorteo = useMemo(
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    () => (id ? raffleService.getById(id) : null),
-    [id, version]
-  )
-  const inscripcion = useMemo(
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    () => (user && id ? raffleService.getInscripcion(user.id, id) : null),
-    [user, id, version]
-  )
+  if (loading) {
+    return (
+      <div className="flex justify-center p-16">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  const sorteo = data?.sorteo ?? null
+  const inscripcion = data?.inscripcion ?? null
 
   if (!sorteo) {
     return (
@@ -53,14 +63,15 @@ export function SorteoDetalle() {
 
   const cerrado = sorteo.estado === "cerrado"
 
-  function inscribir() {
-    if (!user || !sorteo) return
-    const result = raffleService.inscribir(user.id, sorteo.id)
+  async function inscribir() {
+    if (!sorteo) return
+    setInscribiendo(true)
+    const result = await raffleService.inscribir(sorteo.id)
+    setInscribiendo(false)
     if (result.ok) {
-      refreshUser()
-      refrescar()
-      const ultimo = result.data.numeros[result.data.numeros.length - 1]
-      toast.success(`¡Anotado! Tu número es el ${ultimo}.`)
+      await refreshUser()
+      reload()
+      toast.success(`¡Anotado! Tu número es el ${result.data}.`)
     } else {
       toast.error(result.error)
     }
@@ -85,7 +96,7 @@ export function SorteoDetalle() {
           </div>
           <CardDescription className="flex items-center gap-1">
             <Clock className="size-3.5" />
-            <Countdown target={sorteo.cierre} onComplete={refrescar} />
+            <Countdown target={sorteo.cierre} onComplete={reload} />
           </CardDescription>
         </CardHeader>
 
@@ -142,12 +153,18 @@ export function SorteoDetalle() {
         </CardContent>
 
         <CardFooter>
-          <Button className="w-full" onClick={inscribir} disabled={cerrado}>
-            {cerrado
-              ? "Sorteo cerrado"
-              : inscripcion
-                ? "Sumar otro número"
-                : "Anotarme"}
+          <Button
+            className="w-full"
+            onClick={inscribir}
+            disabled={cerrado || inscribiendo}
+          >
+            {inscribiendo
+              ? "Procesando..."
+              : cerrado
+                ? "Sorteo cerrado"
+                : inscripcion
+                  ? "Sumar otro número"
+                  : "Anotarme"}
           </Button>
         </CardFooter>
       </Card>

@@ -15,7 +15,7 @@ import { fail, ok, toErrorMessage } from "./result"
 async function cargarPerfil(authUser: AuthUser): Promise<PublicUser | null> {
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, nombre, role, creditos")
+    .select("id, nombre, apellido, dni, role, creditos")
     .eq("id", authUser.id)
     .single<ProfileRow>()
 
@@ -32,21 +32,35 @@ async function cargarPerfil(authUser: AuthUser): Promise<PublicUser | null> {
   return mapUser(profile, authUser.email ?? "", membership ?? null)
 }
 
-/** RS3.1: registro. El perfil lo crea el trigger handle_new_user. */
+/** RS3.1 / RA1: registro. El perfil lo crea el trigger handle_new_user. */
 export async function register(params: {
   nombre: string
+  apellido: string
+  dni: string
   email: string
   password: string
 }): Promise<ServiceResult<PublicUser>> {
   const email = params.email.trim().toLowerCase()
-  if (!params.nombre.trim() || !email || !params.password) {
+  if (
+    !params.nombre.trim() ||
+    !params.apellido.trim() ||
+    !params.dni.trim() ||
+    !email ||
+    !params.password
+  ) {
     return fail("Completá todos los campos.")
   }
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password: params.password,
-    options: { data: { nombre: params.nombre.trim() } },
+    options: {
+      data: {
+        nombre: params.nombre.trim(),
+        apellido: params.apellido.trim(),
+        dni: params.dni.trim(),
+      },
+    },
   })
   if (error) return fail(toErrorMessage(error, "No se pudo crear la cuenta."))
   if (!data.user) return fail("No se pudo crear la cuenta.")

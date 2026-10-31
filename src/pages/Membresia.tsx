@@ -76,7 +76,7 @@ export function Membresia() {
         <CardContent className="flex items-center gap-2 text-sm">
           <Coins className="size-4 text-muted-foreground" />
           <span className="font-medium">{formatCreditos(saldo)}</span>
-          <span className="text-muted-foreground">créditos disponibles</span>
+          <span className="text-muted-foreground">puntos disponibles</span>
         </CardContent>
       </Card>
 
@@ -130,7 +130,7 @@ export function Membresia() {
                       {procesando
                         ? "Procesando..."
                         : saldoInsuficiente
-                            ? `Faltan ${formatCreditos(plan.costoCreditos - saldo)} créditos`
+                            ? `Faltan ${formatCreditos(plan.costoCreditos - saldo)} puntos`
                           : membresiaActiva
                             ? "Cambiar a este plan"
                             : "Activar"}
@@ -144,8 +144,8 @@ export function Membresia() {
       )}
 
       <p className="text-center text-xs text-muted-foreground">
-        Los créditos los carga un administrador. La membresía se paga con
-        créditos.
+        Los puntos los carga un administrador. La membresía se paga con
+        puntos.
       </p>
     </div>
   )

@@ -10,24 +10,12 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { authService, creditService } from "@/services"
-import { useAsync } from "@/hooks/useAsync"
-import { formatCreditos } from "@/lib/format"
+import { creditService, type UsuarioAdmin } from "@/services"
 import { playError, playSuccess } from "@/lib/sound"
+import { UserSearch } from "@/components/admin/UserSearch"
 
 export function AdminCreditos() {
-  const { data: clientes, reload } = useAsync(
-    () => authService.listarClientes(),
-    []
-  )
-  const [targetId, setTargetId] = useState("")
+  const [cliente, setCliente] = useState<UsuarioAdmin | null>(null)
   const [monto, setMonto] = useState("")
   const [cargando, setCargando] = useState(false)
 
@@ -35,8 +23,8 @@ export function AdminCreditos() {
     e.preventDefault()
 
     const cantidad = Number(monto)
-    if (!targetId) {
-      toast.error("Elegí un cliente.")
+    if (!cliente) {
+      toast.error("Buscá y elegí un cliente.")
       return
     }
     if (!Number.isFinite(cantidad) || cantidad <= 0) {
@@ -45,13 +33,13 @@ export function AdminCreditos() {
     }
 
     setCargando(true)
-    const result = await creditService.cargar(targetId, cantidad)
+    const result = await creditService.cargar(cliente.id, cantidad)
     setCargando(false)
     if (result.ok) {
       playSuccess()
-      toast.success("Créditos cargados correctamente.")
+      toast.success("Puntos cargados correctamente.")
       setMonto("")
-      reload()
+      setCliente(null)
     } else {
       playError()
       toast.error(result.error)
@@ -63,25 +51,14 @@ export function AdminCreditos() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Coins className="size-4" />
-          Cargar créditos
+          Cargar puntos
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="cliente">Cliente</Label>
-            <Select value={targetId} onValueChange={setTargetId}>
-              <SelectTrigger id="cliente">
-                <SelectValue placeholder="Elegí un cliente" />
-              </SelectTrigger>
-              <SelectContent>
-                {(clientes ?? []).map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nombre} · {formatCreditos(c.creditos)} créditos
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Cliente</Label>
+            <UserSearch value={cliente} onSelect={setCliente} />
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="monto">Monto</Label>

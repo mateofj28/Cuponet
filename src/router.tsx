@@ -14,7 +14,15 @@ import { CuponDetalle } from "@/pages/CuponDetalle"
 import { Sorteos } from "@/pages/Sorteos"
 import { SorteoDetalle } from "@/pages/SorteoDetalle"
 import { Historial } from "@/pages/Historial"
-import { Admin } from "@/pages/Admin"
+import { AdminLayout } from "@/components/admin/AdminLayout"
+import { AdminCreditos } from "@/components/admin/AdminCreditos"
+import { AdminCupones } from "@/components/admin/AdminCupones"
+import { AdminSorteos } from "@/components/admin/AdminSorteos"
+import { AdminHistorial } from "@/components/admin/AdminHistorial"
+import { AdminDashboard } from "@/components/admin/AdminDashboard"
+import { AdminUsuarios } from "@/components/admin/AdminUsuarios"
+import { AdminComercios } from "@/components/admin/AdminComercios"
+import { AdminEstadisticas } from "@/components/admin/AdminEstadisticas"
 
 /**
  * Rutas de Cuponet (ver design.md).
@@ -57,7 +65,20 @@ export const router = createBrowserRouter([
           {
             element: <AdminRoute />,
             children: [
-              { path: "/admin", element: <Admin /> },
+              {
+                path: "/admin",
+                element: <AdminLayout />,
+                children: [
+                  { index: true, element: <AdminDashboard /> },
+                  { path: "usuarios", element: <AdminUsuarios /> },
+                  { path: "comercios", element: <AdminComercios /> },
+                  { path: "cupones", element: <AdminCupones /> },
+                  { path: "sorteos", element: <AdminSorteos /> },
+                  { path: "creditos", element: <AdminCreditos /> },
+                  { path: "historial", element: <AdminHistorial /> },
+                  { path: "estadisticas", element: <AdminEstadisticas /> },
+                ],
+              },
             ],
           },
         ],

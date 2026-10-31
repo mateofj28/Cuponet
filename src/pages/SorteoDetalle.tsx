@@ -1,4 +1,6 @@
 import { useState } from "react"
+import { format, parseISO } from "date-fns"
+import { es } from "date-fns/locale"
 import { Link, useParams } from "react-router-dom"
 import { ArrowLeft, Clock, Coins, Gift, Hash, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -138,6 +140,14 @@ export function SorteoDetalle() {
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Números en juego</span>
             <span>{sorteo.numerosEnJuego}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Se anuncia el</span>
+            <span className="font-medium">
+              {format(parseISO(sorteo.fechaSorteo), "d 'de' MMMM yyyy", {
+                locale: es,
+              })}
+            </span>
           </div>
 
           {inscripcion && inscripcion.numeros.length > 0 && (

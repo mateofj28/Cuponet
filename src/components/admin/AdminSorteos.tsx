@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react"
 import { format, parseISO } from "date-fns"
+import { es } from "date-fns/locale"
 import { Lock, Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +24,7 @@ import { Label } from "@/components/ui/label"
 import { raffleService, type Sorteo } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
 
 const toDateTimeInput = (iso: string) =>
   format(parseISO(iso), "yyyy-MM-dd'T'HH:mm")
@@ -32,6 +34,7 @@ interface FormState {
   productoPrincipal: string
   productosSecundarios: string
   cierre: string
+  fechaSorteo: string
   numerosEnJuego: string
   costoCreditos: string
 }
@@ -41,6 +44,8 @@ const emptyForm = (): FormState => ({
   productoPrincipal: "",
   productosSecundarios: "",
   cierre: toDateTimeInput(new Date(Date.now() + 86_400_000).toISOString()),
+  // Anuncio por defecto: 2 días después (posterior al cierre).
+  fechaSorteo: toDateTimeInput(new Date(Date.now() + 2 * 86_400_000).toISOString()),
   numerosEnJuego: "100",
   costoCreditos: "50",
 })
@@ -68,6 +73,7 @@ export function AdminSorteos() {
       productoPrincipal: s.productoPrincipal,
       productosSecundarios: s.productosSecundarios.join(", "),
       cierre: toDateTimeInput(s.cierre),
+      fechaSorteo: toDateTimeInput(s.fechaSorteo),
       numerosEnJuego: String(s.numerosEnJuego),
       costoCreditos: String(s.costoCreditos),
     })
@@ -84,8 +90,13 @@ export function AdminSorteos() {
         .map((p) => p.trim())
         .filter(Boolean),
       cierre: new Date(form.cierre).toISOString(),
+      fechaSorteo: new Date(form.fechaSorteo).toISOString(),
       numerosEnJuego: Number(form.numerosEnJuego) || 0,
       costoCreditos: Number(form.costoCreditos) || 0,
+    }
+    if (new Date(payload.fechaSorteo) < new Date(payload.cierre)) {
+      toast.error("La fecha del sorteo debe ser igual o posterior al cierre.")
+      return
     }
     setGuardando(true)
     const result = editId
@@ -186,12 +197,23 @@ export function AdminSorteos() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="s-cierre">Cierre</Label>
+                <Label htmlFor="s-cierre">Cierre de inscripciones</Label>
                 <Input
                   id="s-cierre"
                   type="datetime-local"
                   value={form.cierre}
                   onChange={(e) => setForm({ ...form, cierre: e.target.value })}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="s-fecha">Fecha del sorteo (anuncio)</Label>
+                <Input
+                  id="s-fecha"
+                  type="datetime-local"
+                  value={form.fechaSorteo}
+                  onChange={(e) =>
+                    setForm({ ...form, fechaSorteo: e.target.value })
+                  }
                 />
               </div>
               <DialogFooter>
@@ -213,8 +235,9 @@ export function AdminSorteos() {
             <div key={s.id} className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{s.titulo}</p>
-                <p className="text-xs text-muted-foreground">
-                  {s.productoPrincipal}
+                <p className="truncate text-xs text-muted-foreground">
+                  {s.productoPrincipal} · sorteo{" "}
+                  {format(parseISO(s.fechaSorteo), "d MMM yyyy", { locale: es })}
                 </p>
               </div>
               <Badge
@@ -231,15 +254,32 @@ export function AdminSorteos() {
               >
                 <Pencil className="size-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => cerrar(s.id)}
-                disabled={s.estado === "cerrado"}
-                aria-label="Cerrar sorteo"
-              >
-                <Lock className="size-4" />
-              </Button>
+              {s.estado === "cerrado" ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled
+                  aria-label="Sorteo cerrado"
+                >
+                  <Lock className="size-4" />
+                </Button>
+              ) : (
+                <ConfirmDialog
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Cerrar sorteo"
+                    >
+                      <Lock className="size-4" />
+                    </Button>
+                  }
+                  title="Cerrar sorteo"
+                  description={`¿Confirmás cerrar "${s.titulo}"? No se podrán registrar más inscripciones.`}
+                  confirmLabel="Confirmar cierre"
+                  onConfirm={() => cerrar(s.id)}
+                />
+              )}
             </div>
           ))
         )}

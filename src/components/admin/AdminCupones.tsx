@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select"
 import { couponService, type CuponConComercio } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
 
 const toDateInput = (iso: string) => format(parseISO(iso), "yyyy-MM-dd")
 
@@ -217,14 +218,18 @@ export function AdminCupones() {
               >
                 <Pencil className="size-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => eliminar(c.id)}
-                aria-label="Eliminar"
-              >
-                <Trash2 className="size-4 text-destructive" />
-              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button variant="ghost" size="icon" aria-label="Eliminar">
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                }
+                title="Eliminar cupón"
+                description={`¿Seguro que querés eliminar "${c.titulo}"? Esta acción no se puede deshacer.`}
+                confirmLabel="Eliminar"
+                destructive
+                onConfirm={() => eliminar(c.id)}
+              />
             </div>
           ))
         )}

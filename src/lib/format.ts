@@ -1,6 +1,19 @@
-// Formato de números para la UI.
+// Formato de números y etiquetas para la UI.
+
+import type { PlanId } from "@/services"
 
 const creditosFormatter = new Intl.NumberFormat("es-AR")
+
+/** Nombre legible de un plan a partir de su id. */
+export const NOMBRE_PLAN: Record<PlanId, string> = {
+  plan1: "Plan 1",
+  plan3: "Plan 3",
+  black: "Plan Black",
+}
+
+export function nombrePlan(planId: PlanId | null): string {
+  return planId ? NOMBRE_PLAN[planId] : "Sin plan"
+}
 
 /**
  * Formatea una cantidad de créditos con separador de miles.

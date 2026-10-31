@@ -4,13 +4,16 @@
 import type {
   Comercio,
   Cupon,
+  DashboardMetrics,
   Inscripcion,
   Movimiento,
   Plan,
   PlanId,
   PublicUser,
+  PuntoCargadoDia,
   Role,
   Sorteo,
+  SorteoStats,
   TipoMovimiento,
 } from "./types"
 
@@ -19,6 +22,8 @@ import type {
 export interface ProfileRow {
   id: string
   nombre: string
+  apellido: string | null
+  dni: string | null
   role: Role
   creditos: number
 }
@@ -40,6 +45,12 @@ export interface ComercioRow {
   id: string
   nombre: string
   instagram_url: string | null
+  descripcion: string | null
+  direccion: string | null
+  telefono: string | null
+  email: string | null
+  activo: boolean
+  created_at: string
 }
 
 export interface CuponRow {
@@ -57,6 +68,7 @@ export interface SorteoRow {
   producto_principal: string
   productos_secundarios: string[]
   cierre: string
+  fecha_sorteo: string
   numeros_en_juego: number
   costo_creditos: number
   estado: "activo" | "cerrado"
@@ -91,6 +103,12 @@ export const mapComercio = (r: ComercioRow): Comercio => ({
   id: r.id,
   nombre: r.nombre,
   instagramUrl: r.instagram_url ?? "",
+  descripcion: r.descripcion ?? "",
+  direccion: r.direccion ?? null,
+  telefono: r.telefono ?? null,
+  email: r.email ?? null,
+  activo: r.activo ?? true,
+  createdAt: r.created_at ?? new Date().toISOString(),
 })
 
 export const mapCupon = (r: CuponRow): Cupon => ({
@@ -108,6 +126,7 @@ export const mapSorteo = (r: SorteoRow): Sorteo => ({
   productoPrincipal: r.producto_principal,
   productosSecundarios: r.productos_secundarios ?? [],
   cierre: r.cierre,
+  fechaSorteo: r.fecha_sorteo,
   numerosEnJuego: r.numeros_en_juego,
   costoCreditos: r.costo_creditos,
   estado: r.estado,
@@ -133,6 +152,47 @@ export const mapMovimiento = (r: MovimientoRow): Movimiento => ({
  * Arma el PublicUser combinando la fila de perfil, el email de Auth y la
  * membresía vigente (la de mayor expiración, o null).
  */
+// ---- Métricas (las RPC devuelven JSON en snake_case) ----
+
+export const mapDashboardMetrics = (r: {
+  total_usuarios: number
+  nuevos_hoy: number
+  membresias_activas: number
+  cupones_canjeados_hoy: number
+  sorteos_activos: number
+  sorteos_finalizados: number
+  puntos_cargados_hoy: number
+}): DashboardMetrics => ({
+  totalUsuarios: r.total_usuarios,
+  nuevosHoy: r.nuevos_hoy,
+  membresiasActivas: r.membresias_activas,
+  cuponesCanjeadosHoy: r.cupones_canjeados_hoy,
+  sorteosActivos: r.sorteos_activos,
+  sorteosFinalizados: r.sorteos_finalizados,
+  puntosCargadosHoy: r.puntos_cargados_hoy,
+})
+
+export const mapPuntoDia = (r: {
+  dia: string
+  total: number
+}): PuntoCargadoDia => ({ dia: r.dia, total: r.total })
+
+export const mapSorteoStats = (r: {
+  sorteos_total: number
+  sorteos_activos: number
+  sorteos_finalizados: number
+  participaciones: number
+  usuarios_participantes: number
+  puntos_utilizados: number
+}): SorteoStats => ({
+  sorteosTotal: r.sorteos_total,
+  sorteosActivos: r.sorteos_activos,
+  sorteosFinalizados: r.sorteos_finalizados,
+  participaciones: r.participaciones,
+  usuariosParticipantes: r.usuarios_participantes,
+  puntosUtilizados: r.puntos_utilizados,
+})
+
 export const mapUser = (
   profile: ProfileRow,
   email: string,
@@ -140,6 +200,8 @@ export const mapUser = (
 ): PublicUser => ({
   id: profile.id,
   nombre: profile.nombre,
+  apellido: profile.apellido ?? null,
+  dni: profile.dni ?? null,
   email,
   role: profile.role,
   creditos: profile.creditos,

@@ -29,5 +29,7 @@ export function toErrorMessage(
     console.error("Supabase error:", error)
     return fallback
   }
-  return message
+  // De cara al usuario se dice "puntos", no "créditos" (requisito legal).
+  // El backend usa "créditos" internamente; traducimos solo el texto visible.
+  return message.replace(/créditos/gi, "puntos").replace(/crédito/gi, "punto")
 }

@@ -21,6 +21,8 @@ export interface Membership {
 export interface User {
   id: string
   nombre: string
+  apellido: string | null
+  dni: string | null
   email: string
   role: Role
   creditos: number
@@ -37,6 +39,12 @@ export interface Comercio {
   id: string
   nombre: string
   instagramUrl: string
+  descripcion: string
+  direccion: string | null
+  telefono: string | null
+  email: string | null
+  activo: boolean
+  createdAt: string
 }
 
 export interface Cupon {
@@ -53,7 +61,8 @@ export interface Sorteo {
   titulo: string
   productoPrincipal: string
   productosSecundarios: string[]
-  cierre: string // ISO -> cuenta regresiva
+  cierre: string // ISO -> cierre de inscripciones (cuenta regresiva)
+  fechaSorteo: string // ISO -> fecha de anuncio del premio (>= cierre)
   numerosEnJuego: number
   costoCreditos: number // costo por inscripción
   estado: "activo" | "cerrado"
@@ -85,3 +94,45 @@ export interface Movimiento {
 export type ServiceResult<T = void> =
   | { ok: true; data: T }
   | { ok: false; error: string }
+
+// ---- Métricas del panel admin ----
+
+export interface DashboardMetrics {
+  totalUsuarios: number
+  nuevosHoy: number
+  membresiasActivas: number
+  cuponesCanjeadosHoy: number
+  sorteosActivos: number
+  sorteosFinalizados: number
+  puntosCargadosHoy: number
+}
+
+export interface PuntoCargadoDia {
+  dia: string // ISO date
+  total: number
+}
+
+export interface SorteoStats {
+  sorteosTotal: number
+  sorteosActivos: number
+  sorteosFinalizados: number
+  participaciones: number
+  usuariosParticipantes: number
+  puntosUtilizados: number
+}
+
+/** Usuario tal como se muestra en la gestión del admin. */
+export interface UsuarioAdmin {
+  id: string
+  nombre: string
+  apellido: string | null
+  dni: string | null
+  email: string
+  role: Role
+  creditos: number // saldo actual
+  puntosUtilizados: number // total gastado (histórico)
+  createdAt: string
+  planId: PlanId | null
+  membresiaInicio: string | null
+  membresiaExpiracion: string | null
+}

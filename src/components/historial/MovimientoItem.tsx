@@ -15,7 +15,7 @@ const META: Record<TipoMovimiento, { label: string; icon: LucideIcon }> = {
   compra_membresia: { label: "Membresía", icon: CreditCard },
   canje_cupon: { label: "Cupón", icon: Ticket },
   inscripcion_sorteo: { label: "Sorteo", icon: Trophy },
-  carga_creditos: { label: "Carga de créditos", icon: Coins },
+  carga_creditos: { label: "Carga de puntos", icon: Coins },
 }
 
 export function MovimientoItem({

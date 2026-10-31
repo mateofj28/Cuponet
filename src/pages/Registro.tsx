@@ -18,6 +18,8 @@ export function Registro() {
   const { register } = useAuth()
   const navigate = useNavigate()
   const [nombre, setNombre] = useState("")
+  const [apellido, setApellido] = useState("")
+  const [dni, setDni] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
@@ -28,8 +30,12 @@ export function Registro() {
     e.preventDefault()
     setError(null)
 
-    if (!nombre.trim() || !email.trim() || !password) {
+    if (!nombre.trim() || !apellido.trim() || !dni.trim() || !email.trim() || !password) {
       setError("Completá todos los campos.")
+      return
+    }
+    if (!/^\d{7,9}$/.test(dni.trim())) {
+      setError("El DNI debe tener entre 7 y 9 dígitos.")
       return
     }
     if (password.length < 6) {
@@ -42,7 +48,7 @@ export function Registro() {
     }
 
     setSubmitting(true)
-    const result = await register(nombre, email, password)
+    const result = await register(nombre, apellido, dni, email, password)
     setSubmitting(false)
 
     if (result.ok) {
@@ -64,7 +70,7 @@ export function Registro() {
         <CardHeader>
           <CardTitle>Registro</CardTitle>
           <CardDescription>
-            Después, un administrador podrá cargarte créditos para empezar.
+            Después, un administrador podrá cargarte puntos para empezar.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -73,9 +79,28 @@ export function Registro() {
               <Label htmlFor="nombre">Nombre</Label>
               <Input
                 id="nombre"
-                autoComplete="name"
+                autoComplete="given-name"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="apellido">Apellido</Label>
+              <Input
+                id="apellido"
+                autoComplete="family-name"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dni">DNI</Label>
+              <Input
+                id="dni"
+                inputMode="numeric"
+                placeholder="Sin puntos"
+                value={dni}
+                onChange={(e) => setDni(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-2">

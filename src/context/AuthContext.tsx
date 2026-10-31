@@ -24,6 +24,8 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<ActionResult>
   register: (
     nombre: string,
+    apellido: string,
+    dni: string,
     email: string,
     password: string
   ) => Promise<ActionResult>
@@ -84,10 +86,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (
       nombre: string,
+      apellido: string,
+      dni: string,
       email: string,
       password: string
     ): Promise<ActionResult> => {
-      const result = await authService.register({ nombre, email, password })
+      const result = await authService.register({
+        nombre,
+        apellido,
+        dni,
+        email,
+        password,
+      })
       if (result.ok) {
         setUser(result.data)
         return { ok: true }

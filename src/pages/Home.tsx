@@ -85,7 +85,7 @@ export function Home() {
             <span className="font-medium">
               {formatCreditos(user?.creditos ?? 0)}
             </span>
-            <span className="text-muted-foreground">créditos</span>
+            <span className="text-muted-foreground">puntos</span>
           </div>
           <Button asChild size="sm" variant={membresiaActiva ? "outline" : "default"}>
             <Link to="/membresia">

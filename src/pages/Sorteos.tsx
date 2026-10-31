@@ -17,7 +17,7 @@ export function Sorteos() {
           Sorteos
         </h1>
         <p className="text-sm text-muted-foreground">
-          Participá con tus créditos y sumá oportunidades.
+          Participá con tus puntos y sumá oportunidades.
         </p>
       </div>
 

@@ -9,7 +9,7 @@ import {
 import { fail, ok, toErrorMessage } from "./result"
 
 const SELECT_SORTEO =
-  "id, titulo, producto_principal, productos_secundarios, cierre, numeros_en_juego, costo_creditos, estado"
+  "id, titulo, producto_principal, productos_secundarios, cierre, fecha_sorteo, numeros_en_juego, costo_creditos, estado"
 
 /** R4.1: sorteos activos (y aún no vencidos). */
 export async function listarActivos(): Promise<Sorteo[]> {
@@ -79,6 +79,7 @@ export interface SorteoInput {
   productoPrincipal: string
   productosSecundarios: string[]
   cierre: string
+  fechaSorteo: string
   numerosEnJuego: number
   costoCreditos: number
 }
@@ -89,6 +90,7 @@ export async function crear(input: SorteoInput): Promise<ServiceResult> {
     producto_principal: input.productoPrincipal,
     productos_secundarios: input.productosSecundarios,
     cierre: input.cierre,
+    fecha_sorteo: input.fechaSorteo,
     numeros_en_juego: input.numerosEnJuego,
     costo_creditos: input.costoCreditos,
   })
@@ -107,6 +109,7 @@ export async function actualizar(
   if (input.productosSecundarios !== undefined)
     payload.productos_secundarios = input.productosSecundarios
   if (input.cierre !== undefined) payload.cierre = input.cierre
+  if (input.fechaSorteo !== undefined) payload.fecha_sorteo = input.fechaSorteo
   if (input.numerosEnJuego !== undefined)
     payload.numeros_en_juego = input.numerosEnJuego
   if (input.costoCreditos !== undefined)

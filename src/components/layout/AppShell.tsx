@@ -1,14 +1,17 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import {
+  BarChart3,
   Coins,
   Home,
+  LayoutDashboard,
+  LayoutGrid,
   LogOut,
-  Shield,
   Ticket,
   Trophy,
   Volume2,
   VolumeOff,
   History as HistoryIcon,
+  type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/context/AuthContext"
@@ -19,17 +22,33 @@ import { badgeSuccess } from "@/lib/statusBadge"
 import { formatCreditos } from "@/lib/format"
 import { useSoundPreference } from "@/hooks/useSoundPreference"
 
-const navItems = [
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+  end?: boolean
+}
+
+const clienteNav: NavItem[] = [
   { to: "/", label: "Inicio", icon: Home, end: true },
-  { to: "/cupones", label: "Cupones", icon: Ticket, end: false },
-  { to: "/sorteos", label: "Sorteos", icon: Trophy, end: false },
-  { to: "/historial", label: "Historial", icon: HistoryIcon, end: false },
+  { to: "/cupones", label: "Cupones", icon: Ticket },
+  { to: "/sorteos", label: "Sorteos", icon: Trophy },
+  { to: "/historial", label: "Historial", icon: HistoryIcon },
+]
+
+const adminNav: NavItem[] = [
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin/gestion", label: "Gestión", icon: LayoutGrid },
+  { to: "/admin/operacion", label: "Operación", icon: Coins },
+  { to: "/admin/metricas", label: "Métricas", icon: BarChart3 },
 ]
 
 export function AppShell() {
   const { user, isAdmin, membresiaActiva, logout } = useAuth()
   const navigate = useNavigate()
   const { enabled: soundOn, toggle: toggleSound } = useSoundPreference()
+
+  const navItems = isAdmin ? adminNav : clienteNav
 
   async function handleLogout() {
     await logout()
@@ -45,32 +64,38 @@ export function AppShell() {
           <p className="text-sm font-semibold leading-none">Cuponet</p>
           <p className="text-xs text-muted-foreground">
             Hola, {user?.nombre ?? "invitado"}
+            {isAdmin && " · Admin"}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="gap-1">
-            <Coins className="size-3.5" />
-            {formatCreditos(user?.creditos ?? 0)}
-          </Badge>
-          <Badge
-            variant={membresiaActiva ? "default" : "outline"}
-            className={membresiaActiva ? badgeSuccess : undefined}
-          >
-            {membresiaActiva ? "Activa" : "Sin membresía"}
-          </Badge>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSound}
-            aria-label={soundOn ? "Silenciar sonidos" : "Activar sonidos"}
-            aria-pressed={soundOn}
-          >
-            {soundOn ? (
-              <Volume2 className="size-4" />
-            ) : (
-              <VolumeOff className="size-4" />
-            )}
-          </Button>
+          {/* Saldo y membresía solo aplican al cliente */}
+          {!isAdmin && (
+            <>
+              <Badge variant="secondary" className="gap-1">
+                <Coins className="size-3.5" />
+                {formatCreditos(user?.creditos ?? 0)}
+              </Badge>
+              <Badge
+                variant={membresiaActiva ? "default" : "outline"}
+                className={membresiaActiva ? badgeSuccess : undefined}
+              >
+                {membresiaActiva ? "Activa" : "Sin membresía"}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSound}
+                aria-label={soundOn ? "Silenciar sonidos" : "Activar sonidos"}
+                aria-pressed={soundOn}
+              >
+                {soundOn ? (
+                  <Volume2 className="size-4" />
+                ) : (
+                  <VolumeOff className="size-4" />
+                )}
+              </Button>
+            </>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -107,22 +132,6 @@ export function AppShell() {
             {label}
           </NavLink>
         ))}
-        {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) =>
-              cn(
-                "flex flex-1 flex-col items-center gap-1 py-2 text-xs transition-colors",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )
-            }
-          >
-            <Shield className="size-5" />
-            Admin
-          </NavLink>
-        )}
       </nav>
     </div>
   )

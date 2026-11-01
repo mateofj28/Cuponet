@@ -65,11 +65,13 @@ export function AdminDashboard() {
 
   if (!metrics) {
     return (
-      <Card>
-        <CardContent className="p-6 text-sm text-muted-foreground">
-          No se pudieron cargar las métricas.
-        </CardContent>
-      </Card>
+      <div className="p-4">
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            No se pudieron cargar las métricas.
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -79,7 +81,7 @@ export function AdminDashboard() {
   }))
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 p-4">
       <div>
         <h1 className="text-lg font-semibold">Dashboard</h1>
         <p className="text-sm text-muted-foreground">

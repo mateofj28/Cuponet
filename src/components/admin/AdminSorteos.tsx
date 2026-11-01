@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label"
 import { raffleService, type Sorteo } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
 
 const toDateTimeInput = (iso: string) =>
@@ -196,26 +197,18 @@ export function AdminSorteos() {
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="s-cierre">Cierre de inscripciones</Label>
-                <Input
-                  id="s-cierre"
-                  type="datetime-local"
-                  value={form.cierre}
-                  onChange={(e) => setForm({ ...form, cierre: e.target.value })}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="s-fecha">Fecha del sorteo (anuncio)</Label>
-                <Input
-                  id="s-fecha"
-                  type="datetime-local"
-                  value={form.fechaSorteo}
-                  onChange={(e) =>
-                    setForm({ ...form, fechaSorteo: e.target.value })
-                  }
-                />
-              </div>
+              <DateTimePicker
+                label="Cierre de inscripciones"
+                id="s-cierre"
+                value={form.cierre}
+                onChange={(v) => setForm({ ...form, cierre: v })}
+              />
+              <DateTimePicker
+                label="Fecha del sorteo (anuncio)"
+                id="s-fecha"
+                value={form.fechaSorteo}
+                onChange={(v) => setForm({ ...form, fechaSorteo: v })}
+              />
               <DialogFooter>
                 <Button type="submit" disabled={guardando}>
                   {guardando ? "Guardando..." : "Guardar"}

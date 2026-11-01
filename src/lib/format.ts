@@ -16,6 +16,16 @@ export function nombrePlan(planId: PlanId | null): string {
 }
 
 /**
+ * Formatea para gráficos: abrevia valores grandes para que quepan.
+ * Ej: 2006900 → "2M" · 53200 → "53K" · 850 → "850"
+ */
+export function formatAbrev(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`
+  return String(n)
+}
+
+/**
  * Formatea una cantidad de créditos con separador de miles.
  * Ej: 5370 -> "5.370" · 6000 -> "6.000"
  */

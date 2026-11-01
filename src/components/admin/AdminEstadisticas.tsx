@@ -9,7 +9,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -21,6 +20,7 @@ import {
 import { adminService } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { formatCreditos } from "@/lib/format"
+import { DatePicker } from "@/components/ui/date-picker"
 
 type EstadoFiltro = "todos" | "activo" | "cerrado"
 
@@ -79,18 +79,20 @@ export function AdminEstadisticas() {
         <CardContent className="grid grid-cols-3 gap-2 p-4">
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Desde</Label>
-            <Input
-              type="date"
+            <DatePicker
               value={desde}
-              onChange={(e) => setDesde(e.target.value)}
+              onChange={setDesde}
+              placeholder="Desde"
+              className="w-full text-xs"
             />
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Hasta</Label>
-            <Input
-              type="date"
+            <DatePicker
               value={hasta}
-              onChange={(e) => setHasta(e.target.value)}
+              onChange={setHasta}
+              placeholder="Hasta"
+              className="w-full text-xs"
             />
           </div>
           <div className="flex flex-col gap-1">

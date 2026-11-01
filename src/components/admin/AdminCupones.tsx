@@ -29,6 +29,7 @@ import {
 import { couponService, type CuponConComercio } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
+import { DatePicker } from "@/components/ui/date-picker"
 
 const toDateInput = (iso: string) => format(parseISO(iso), "yyyy-MM-dd")
 
@@ -178,13 +179,9 @@ export function AdminCupones() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="venc">Vencimiento</Label>
-                <Input
-                  id="venc"
-                  type="date"
+                <DatePicker
                   value={form.vencimiento}
-                  onChange={(e) =>
-                    setForm({ ...form, vencimiento: e.target.value })
-                  }
+                  onChange={(v) => setForm({ ...form, vencimiento: v })}
                 />
               </div>
               <DialogFooter>

@@ -146,8 +146,8 @@ export function AdminUsuarios() {
             <>
               {/* ── Tabla (md+) ─────────────────────────────────────── */}
               <div className="hidden md:block">
-                <Card>
-                  <div className="overflow-x-auto">
+                <Card className="overflow-hidden">
+                  <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     <table className="w-full min-w-[800px] text-sm">
                       <thead>
                         <tr className="border-b text-xs text-muted-foreground">

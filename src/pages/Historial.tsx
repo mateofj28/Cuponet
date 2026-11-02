@@ -13,9 +13,9 @@ export function Historial() {
   )
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-lg font-semibold">Historial</h1>
+        <h1 className="text-lg font-semibold md:text-xl">Historial</h1>
         <p className="text-sm text-muted-foreground">
           Tus movimientos más recientes.
         </p>

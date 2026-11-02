@@ -58,9 +58,9 @@ export function AdminHistorial() {
   const hayFiltros = tipo !== "todos" || desde || hasta
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-lg font-semibold">Historial global</h1>
+        <h1 className="text-lg font-semibold md:text-xl lg:text-2xl">Historial global</h1>
         <p className="text-sm text-muted-foreground">
           Movimientos de la plataforma.
         </p>

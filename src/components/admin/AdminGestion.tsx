@@ -10,8 +10,8 @@ export function AdminGestion() {
   const [tab, setTab] = useState("usuarios")
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <h1 className="text-lg font-semibold">Gestión</h1>
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
+      <h1 className="text-lg font-semibold md:text-xl lg:text-2xl">Gestión</h1>
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="usuarios">Usuarios</TabsTrigger>

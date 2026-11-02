@@ -22,28 +22,29 @@
   - Header ocupa ancho completo.
   - _Requisitos: RR1, RR2, RR3_
 
-- [ ] 5. Grids de tarjetas — app cliente
+- [x] 5. Grids de tarjetas — app cliente
   - Home: accesos en `grid-cols-2 lg:grid-cols-3`.
   - Cupones: listado en `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`.
   - Sorteos: listado en `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`.
   - _Requisitos: RR4_
 
-- [ ] 6. Grids de tarjetas — panel admin
+- [x] 6. Grids de tarjetas — panel admin
   - Dashboard métricas: `grid-cols-2 md:grid-cols-3 lg:grid-cols-4`.
   - Estadísticas métricas: `grid-cols-2 md:grid-cols-3 lg:grid-cols-4`.
   - _Requisitos: RR4_
 
-- [ ] 7. Tabla de usuarios en desktop
+- [x] 7. Tabla de usuarios en desktop
   - `AdminUsuarios`: tabla HTML en md+, tarjetas apiladas en móvil (condición `hidden md:table`).
   - _Requisitos: RR4_
 
-- [ ] 8. Formularios en 2 columnas (md+)
+- [x] 8. Formularios en 2 columnas (md+)
   - `AdminCupones`, `AdminSorteos`, `AdminComercios`: campos en `grid md:grid-cols-2` en md+.
   - _Requisitos: RR4_
 
-- [ ] 9. Tipografía y espaciado escalados
+- [x] 9. Tipografía y espaciado escalados
   - Títulos principales: `text-lg md:text-xl lg:text-2xl`.
   - Gaps de sección: `gap-4 md:gap-6`.
+  - Padding de página: `p-4 md:p-6 lg:p-8` en todas las páginas.
   - _Requisitos: RR5_
 
 - [ ] 10. Verificación y no-regresión

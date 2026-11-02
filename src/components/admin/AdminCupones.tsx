@@ -129,7 +129,7 @@ export function AdminCupones() {
                 {editId ? "Editar cupón" : "Nuevo cupón"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={guardar} className="flex flex-col gap-3">
+            <form onSubmit={guardar} className="grid gap-3 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="titulo">Título</Label>
                 <Input
@@ -185,7 +185,7 @@ export function AdminCupones() {
                   minDate={new Date().toISOString().split("T")[0]}
                 />
               </div>
-              <DialogFooter>
+              <DialogFooter className="md:col-span-2">
                 <Button type="submit" disabled={guardando}>
                   {guardando ? "Guardando..." : "Guardar"}
                 </Button>

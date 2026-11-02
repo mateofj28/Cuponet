@@ -3,10 +3,7 @@ import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { Loader2, Search, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -19,14 +16,27 @@ import {
 import { adminService, type UsuarioAdmin } from "@/services"
 import { useAsync } from "@/hooks/useAsync"
 import { badgeSuccess } from "@/lib/statusBadge"
+import { cn } from "@/lib/utils"
 import { formatCreditos, nombrePlan } from "@/lib/format"
 
 const fechaCorta = (iso: string | null) =>
   iso ? format(parseISO(iso), "d MMM yyyy", { locale: es }) : "—"
 
-function membresiaActiva(u: UsuarioAdmin): boolean {
+function esMembresiaActiva(u: UsuarioAdmin): boolean {
   if (!u.membresiaExpiracion) return false
   return new Date(u.membresiaExpiracion).getTime() > Date.now()
+}
+
+function MembresiaBadge({ u }: { u: UsuarioAdmin }) {
+  const activa = esMembresiaActiva(u)
+  return (
+    <Badge
+      variant={activa ? "default" : "outline"}
+      className={activa ? badgeSuccess : undefined}
+    >
+      {activa ? "Activa" : "Vencida"}
+    </Badge>
+  )
 }
 
 export function AdminUsuarios() {
@@ -54,7 +64,7 @@ export function AdminUsuarios() {
       if (rol !== "todos" && u.role !== rol) return false
       if (plan !== "todos" && (u.planId ?? "sin") !== plan) return false
       if (estado !== "todos") {
-        const activa = membresiaActiva(u)
+        const activa = esMembresiaActiva(u)
         if (estado === "activa" && !activa) return false
         if (estado === "vencida" && activa) return false
       }
@@ -63,9 +73,9 @@ export function AdminUsuarios() {
   }, [usuarios, texto, rol, plan, estado])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-lg font-semibold">Usuarios</h1>
+        <h1 className="text-lg font-semibold md:text-xl lg:text-2xl">Usuarios</h1>
         <p className="text-sm text-muted-foreground">
           {usuarios ? `${filtrados.length} de ${usuarios.length}` : "—"} usuarios
         </p>
@@ -123,7 +133,6 @@ export function AdminUsuarios() {
         </CardContent>
       </Card>
 
-      {/* Lista */}
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -134,41 +143,83 @@ export function AdminUsuarios() {
           <p className="text-sm">No hay usuarios que coincidan.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {filtrados.map((u) => (
-            <Card key={u.id}>
-              <CardContent className="flex flex-col gap-2 p-4 text-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">
-                      {u.nombre} {u.apellido ?? ""}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {u.email}
-                    </p>
+            <>
+              {/* ── Tabla (md+) ─────────────────────────────────────── */}
+              <div className="hidden md:block">
+                <Card>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-xs text-muted-foreground">
+                          {["Nombre", "Email", "DNI", "Plan", "Membresía",
+                            "Vence", "Saldo", "Utilizados", "Registro"].map((h) => (
+                              <th key={h} className="px-4 py-3 text-left font-medium whitespace-nowrap">
+                                {h}
+                              </th>
+                            ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filtrados.map((u) => (
+                          <tr key={u.id} className="hover:bg-muted/40 transition-colors">
+                            <td className="px-4 py-3 font-medium whitespace-nowrap">
+                              {u.nombre} {u.apellido ?? ""}
+                              {u.role === "admin" && (
+                                <Badge variant="secondary" className="ml-2 text-xs">admin</Badge>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground max-w-[180px] truncate">
+                              {u.email}
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground">{u.dni ?? "—"}</td>
+                            <td className="px-4 py-3">{nombrePlan(u.planId)}</td>
+                            <td className="px-4 py-3"><MembresiaBadge u={u} /></td>
+                            <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                              {fechaCorta(u.membresiaExpiracion)}
+                            </td>
+                            <td className="px-4 py-3 tabular-nums">{formatCreditos(u.creditos)}</td>
+                            <td className="px-4 py-3 tabular-nums">{formatCreditos(u.puntosUtilizados)}</td>
+                            <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                              {fechaCorta(u.createdAt)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="flex shrink-0 gap-1">
-                    {u.role === "admin" && <Badge variant="secondary">admin</Badge>}
-                    <Badge
-                      variant={membresiaActiva(u) ? "default" : "outline"}
-                      className={membresiaActiva(u) ? badgeSuccess : undefined}
-                    >
-                      {membresiaActiva(u) ? "Activa" : "Vencida"}
-                    </Badge>
+                </Card>
+              </div>
+
+              {/* ── Tarjetas (móvil) ────────────────────────────────── */}
+              <div className="flex flex-col gap-2 md:hidden">
+                {filtrados.map((u) => (
+                  <Card key={u.id}>
+                    <CardContent className="flex flex-col gap-2 p-4 text-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">
+                            {u.nombre} {u.apellido ?? ""}
+                          </p>
+                      <p className="truncate text-xs text-muted-foreground">{u.email}</p>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      {u.role === "admin" && <Badge variant="secondary">admin</Badge>}
+                      <MembresiaBadge u={u} />
+                    </div>
                   </div>
-                </div>
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                  <Dato k="DNI" v={u.dni ?? "—"} />
-                  <Dato k="Plan" v={nombrePlan(u.planId)} />
-                  <Dato k="Registro" v={fechaCorta(u.createdAt)} />
-                  <Dato k="Vence" v={fechaCorta(u.membresiaExpiracion)} />
-                  <Dato k="Saldo" v={formatCreditos(u.creditos)} />
-                  <Dato k="Utilizados" v={formatCreditos(u.puntosUtilizados)} />
-                </dl>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    <Dato k="DNI" v={u.dni ?? "—"} />
+                    <Dato k="Plan" v={nombrePlan(u.planId)} />
+                    <Dato k="Registro" v={fechaCorta(u.createdAt)} />
+                    <Dato k="Vence" v={fechaCorta(u.membresiaExpiracion)} />
+                    <Dato k="Saldo" v={formatCreditos(u.creditos)} />
+                    <Dato k="Utilizados" v={formatCreditos(u.puntosUtilizados)} />
+                  </dl>
+                </CardContent>
+              </Card>
+            ))}
+              </div>
+            </>
       )}
     </div>
   )
@@ -176,7 +227,7 @@ export function AdminUsuarios() {
 
 function Dato({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex justify-between gap-2">
+    <div className={cn("flex justify-between gap-2")}>
       <dt className="text-muted-foreground">{k}</dt>
       <dd className="truncate font-medium">{v}</dd>
     </div>

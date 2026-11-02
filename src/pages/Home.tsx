@@ -53,7 +53,7 @@ export function Home() {
     : null
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       {/* Estado de membresía */}
       <Card>
         <CardHeader>
@@ -96,7 +96,7 @@ export function Home() {
       </Card>
 
       {/* Accesos principales */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {accesos.map(({ to, titulo, descripcion, icon: Icon, color }) => (
           <Link key={to} to={to} className="group">
             <Card className="h-full transition-colors group-hover:border-primary">

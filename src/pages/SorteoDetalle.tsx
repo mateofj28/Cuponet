@@ -85,7 +85,7 @@ export function SorteoDetalle() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <Button asChild variant="ghost" size="sm" className="w-fit px-0">
         <Link to="/sorteos">
           <ArrowLeft className="size-4" />

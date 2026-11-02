@@ -10,9 +10,9 @@ export function Sorteos() {
   )
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="flex items-center gap-2 text-lg font-semibold">
+        <h1 className="flex items-center gap-2 text-lg font-semibold md:text-xl lg:text-2xl">
           <Trophy className="size-5 text-accent-sorteos" />
           Sorteos
         </h1>
@@ -31,7 +31,7 @@ export function Sorteos() {
           <p className="text-sm">No hay sorteos activos en este momento.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {sorteos.map((sorteo) => (
             <RaffleCard key={sorteo.id} sorteo={sorteo} />
           ))}

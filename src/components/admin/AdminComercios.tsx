@@ -129,7 +129,7 @@ export function AdminComercios() {
                 {editId ? "Editar comercio" : "Nuevo comercio"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={guardar} className="flex flex-col gap-3">
+            <form onSubmit={guardar} className="grid gap-3 md:grid-cols-2">
               <Field label="Nombre" id="c-nombre">
                 <Input
                   id="c-nombre"
@@ -186,7 +186,7 @@ export function AdminComercios() {
                   }
                 />
               </Field>
-              <DialogFooter>
+              <DialogFooter className="md:col-span-2">
                 <Button type="submit" disabled={guardando}>
                   {guardando ? "Guardando..." : "Guardar"}
                 </Button>

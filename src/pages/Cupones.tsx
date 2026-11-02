@@ -10,9 +10,9 @@ export function Cupones() {
   )
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="flex items-center gap-2 text-lg font-semibold">
+        <h1 className="flex items-center gap-2 text-lg font-semibold md:text-xl lg:text-2xl">
           <Ticket className="size-5 text-accent-cupones" />
           Cupones
         </h1>
@@ -31,7 +31,7 @@ export function Cupones() {
           <p className="text-sm">Por ahora no hay cupones disponibles.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {cupones.map((cupon) => (
             <CouponCard key={cupon.id} cupon={cupon} />
           ))}

@@ -141,7 +141,7 @@ export function AdminSorteos() {
                 {editId ? "Editar sorteo" : "Nuevo sorteo"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={guardar} className="flex flex-col gap-3">
+            <form onSubmit={guardar} className="grid gap-3 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="s-titulo">Título</Label>
                 <Input
@@ -211,7 +211,7 @@ export function AdminSorteos() {
                 onChange={(v) => setForm({ ...form, fechaSorteo: v })}
                 minValue={form.cierre}
               />
-              <DialogFooter>
+              <DialogFooter className="md:col-span-2">
                 <Button type="submit" disabled={guardando}>
                   {guardando ? "Guardando..." : "Guardar"}
                 </Button>

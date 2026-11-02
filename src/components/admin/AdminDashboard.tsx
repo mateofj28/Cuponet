@@ -81,15 +81,15 @@ export function AdminDashboard() {
   }))
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-lg font-semibold">Dashboard</h1>
+        <h1 className="text-lg font-semibold md:text-xl lg:text-2xl">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           Resumen de actividad de la plataforma.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         <StatCard
           label="Usuarios totales"
           value={metrics.totalUsuarios}

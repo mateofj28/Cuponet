@@ -66,9 +66,9 @@ export function AdminEstadisticas() {
   )
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-lg font-semibold">Estadísticas de sorteos</h1>
+        <h1 className="text-lg font-semibold md:text-xl lg:text-2xl">Estadísticas de sorteos</h1>
         <p className="text-sm text-muted-foreground">
           Métricas de participación de la plataforma.
         </p>
@@ -126,7 +126,7 @@ export function AdminEstadisticas() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
           <Stat label="Sorteos totales" value={stats.sorteosTotal} icon={Trophy} />
           <Stat label="Activos" value={stats.sorteosActivos} icon={Ticket} />
           <Stat

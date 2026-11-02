@@ -202,12 +202,14 @@ export function AdminSorteos() {
                 id="s-cierre"
                 value={form.cierre}
                 onChange={(v) => setForm({ ...form, cierre: v })}
+                minValue={toDateTimeInput(new Date().toISOString())}
               />
               <DateTimePicker
                 label="Fecha del sorteo (anuncio)"
                 id="s-fecha"
                 value={form.fechaSorteo}
                 onChange={(v) => setForm({ ...form, fechaSorteo: v })}
+                minValue={form.cierre}
               />
               <DialogFooter>
                 <Button type="submit" disabled={guardando}>

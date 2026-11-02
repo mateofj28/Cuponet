@@ -182,6 +182,7 @@ export function AdminCupones() {
                 <DatePicker
                   value={form.vencimiento}
                   onChange={(v) => setForm({ ...form, vencimiento: v })}
+                  minDate={new Date().toISOString().split("T")[0]}
                 />
               </div>
               <DialogFooter>

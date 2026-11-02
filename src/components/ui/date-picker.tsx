@@ -16,17 +16,26 @@ interface DatePickerProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  /** Fecha mínima "YYYY-MM-DD". Días anteriores quedan deshabilitados. */
+  minDate?: string
+  /** Fecha máxima "YYYY-MM-DD". Días posteriores quedan deshabilitados. */
+  maxDate?: string
 }
 
-/** Selector de solo fecha usando el Calendar de shadcn/ui. */
+/** Selector de solo fecha usando el Calendar de shadcn/ui, en español. */
 export function DatePicker({
   value,
   onChange,
   placeholder = "Elegí una fecha",
   className,
+  minDate,
+  maxDate,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false)
+
   const date = value ? new Date(value + "T12:00:00") : undefined
+  const min = minDate ? new Date(minDate + "T00:00:00") : undefined
+  const max = maxDate ? new Date(maxDate + "T23:59:59") : undefined
 
   function handleSelect(selected: Date | undefined) {
     if (!selected) {
@@ -39,6 +48,13 @@ export function DatePicker({
     }
     setOpen(false)
   }
+
+  // Construimos el array de matchers y lo casteamos al tipo que espera el Calendar.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const disabled: any[] = [
+    ...(min ? [{ before: min }] : []),
+    ...(max ? [{ after: max }] : []),
+  ]
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,6 +77,9 @@ export function DatePicker({
           mode="single"
           selected={date}
           onSelect={handleSelect}
+          locale={es}
+          disabled={disabled.length > 0 ? disabled : undefined}
+          defaultMonth={date ?? min ?? undefined}
         />
       </PopoverContent>
     </Popover>

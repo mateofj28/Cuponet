@@ -95,6 +95,7 @@ export function AdminHistorial() {
                 onChange={setDesde}
                 placeholder="Fecha inicio"
                 className="w-full"
+                maxDate={hasta || undefined}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -104,6 +105,7 @@ export function AdminHistorial() {
                 onChange={setHasta}
                 placeholder="Fecha fin"
                 className="w-full"
+                minDate={desde || undefined}
               />
             </div>
           </div>

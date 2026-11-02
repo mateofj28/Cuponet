@@ -14,30 +14,37 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 interface DateTimePickerProps {
-  /** Valor en ISO string o string datetime-local "YYYY-MM-DDTHH:mm". */
-  value: string
+  value: string // "YYYY-MM-DDTHH:mm" o ISO
   onChange: (value: string) => void
   label?: string
   id?: string
+  /**
+   * Fecha/hora mínima (ISO o "YYYY-MM-DDTHH:mm").
+   * Días anteriores quedan deshabilitados en el calendario.
+   */
+  minValue?: string
 }
 
 /**
- * Date+time picker usando el Calendar de shadcn/ui (no el nativo del browser).
- * Muestra un Popover con el Calendar para la fecha y un input de hora separado.
+ * Selector de fecha+hora usando el Calendar de shadcn/ui, en español.
+ * El calendario muestra días y meses en español.
+ * Acepta minValue para validar que no se elija una fecha anterior.
  */
 export function DateTimePicker({
   value,
   onChange,
   label,
   id,
+  minValue,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false)
 
-  // Parsea el valor actual en fecha y hora.
   const date = value ? new Date(value) : undefined
   const timeStr = date
     ? `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
     : "00:00"
+
+  const minDate = minValue ? new Date(minValue) : undefined
 
   function handleDaySelect(selected: Date | undefined) {
     if (!selected) return
@@ -48,17 +55,19 @@ export function DateTimePicker({
   }
 
   function handleTimeChange(t: string) {
-    const base = date ?? new Date()
+    const base = date ? new Date(date) : new Date()
     const [h, m] = t.split(":").map(Number)
     base.setHours(isNaN(h) ? 0 : h, isNaN(m) ? 0 : m, 0, 0)
     onChange(toDateTimeLocal(base))
   }
 
+  // Deshabilita días anteriores al mínimo.
+  const disabled = minDate ? { before: minDate } : undefined
+
   return (
     <div className="flex flex-col gap-2">
       {label && <Label htmlFor={id}>{label}</Label>}
       <div className="flex gap-2">
-        {/* Selector de fecha */}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -81,11 +90,13 @@ export function DateTimePicker({
               mode="single"
               selected={date}
               onSelect={handleDaySelect}
+              locale={es}
+              disabled={disabled}
+              defaultMonth={date ?? (minDate ?? undefined)}
             />
           </PopoverContent>
         </Popover>
 
-        {/* Input de hora */}
         <Input
           type="time"
           value={timeStr}
@@ -97,7 +108,6 @@ export function DateTimePicker({
   )
 }
 
-/** Convierte un Date a string "YYYY-MM-DDTHH:mm" (formato datetime-local). */
 function toDateTimeLocal(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0")
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`

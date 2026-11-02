@@ -84,6 +84,7 @@ export function AdminEstadisticas() {
               onChange={setDesde}
               placeholder="Desde"
               className="w-full text-xs"
+              maxDate={hasta || undefined}
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -93,6 +94,7 @@ export function AdminEstadisticas() {
               onChange={setHasta}
               placeholder="Hasta"
               className="w-full text-xs"
+              minDate={desde || undefined}
             />
           </div>
           <div className="flex flex-col gap-1">

@@ -84,6 +84,7 @@ export type TipoMovimiento =
 export interface Movimiento {
   id: string
   userId: string
+  usuarioNombre?: string // solo en historial global del admin (join con profiles)
   tipo: TipoMovimiento
   fecha: string // ISO
   detalle: string

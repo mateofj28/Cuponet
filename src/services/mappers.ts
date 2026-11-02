@@ -84,6 +84,7 @@ export interface InscripcionRow {
 export interface MovimientoRow {
   id: string
   user_id: string
+  usuario_nombre?: string // solo en join con profiles (historial admin)
   tipo: TipoMovimiento
   fecha: string
   detalle: string
@@ -142,6 +143,7 @@ export const mapInscripcion = (r: InscripcionRow): Inscripcion => ({
 export const mapMovimiento = (r: MovimientoRow): Movimiento => ({
   id: r.id,
   userId: r.user_id,
+  usuarioNombre: r.usuario_nombre,
   tipo: r.tipo,
   fecha: r.fecha,
   detalle: r.detalle,

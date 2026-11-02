@@ -46,7 +46,7 @@ const groups: NavGroup[] = [
  */
 export function AdminSidebar() {
   return (
-    <aside className="hidden md:flex md:w-16 lg:w-64 shrink-0 flex-col border-r bg-background pt-4 gap-1">
+    <aside className="hidden md:flex md:w-16 lg:w-64 shrink-0 flex-col border-r bg-background pt-4 gap-1 sticky top-0 h-screen overflow-y-auto">
       {groups.map((g) => (
         <div key={g.grupo} className="flex flex-col">
           {/* Nombre del grupo — solo visible en lg */}

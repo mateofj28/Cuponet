@@ -148,7 +148,7 @@ export function AdminUsuarios() {
               <div className="hidden md:block">
                 <Card>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full min-w-[800px] text-sm">
                       <thead>
                         <tr className="border-b text-xs text-muted-foreground">
                           {["Nombre", "Email", "DNI", "Plan", "Membresía",

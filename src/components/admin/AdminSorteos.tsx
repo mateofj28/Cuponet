@@ -197,20 +197,24 @@ export function AdminSorteos() {
                   />
                 </div>
               </div>
-              <DateTimePicker
-                label="Cierre de inscripciones"
-                id="s-cierre"
-                value={form.cierre}
-                onChange={(v) => setForm({ ...form, cierre: v })}
-                minValue={toDateTimeInput(new Date().toISOString())}
-              />
-              <DateTimePicker
-                label="Fecha del sorteo (anuncio)"
-                id="s-fecha"
-                value={form.fechaSorteo}
-                onChange={(v) => setForm({ ...form, fechaSorteo: v })}
-                minValue={form.cierre}
-              />
+              <div className="md:col-span-2">
+                <DateTimePicker
+                  label="Cierre de inscripciones"
+                  id="s-cierre"
+                  value={form.cierre}
+                  onChange={(v) => setForm({ ...form, cierre: v })}
+                  minValue={toDateTimeInput(new Date().toISOString())}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <DateTimePicker
+                  label="Fecha del sorteo (anuncio)"
+                  id="s-fecha"
+                  value={form.fechaSorteo}
+                  onChange={(v) => setForm({ ...form, fechaSorteo: v })}
+                  minValue={form.cierre}
+                />
+              </div>
               <DialogFooter className="md:col-span-2">
                 <Button type="submit" disabled={guardando}>
                   {guardando ? "Guardando..." : "Guardar"}

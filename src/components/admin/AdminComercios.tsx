@@ -155,27 +155,25 @@ export function AdminComercios() {
                   }
                 />
               </Field>
-              <div className="flex gap-3">
-                <Field label="Teléfono" id="c-tel" className="flex-1">
-                  <Input
-                    id="c-tel"
-                    value={form.telefono}
-                    onChange={(e) =>
-                      setForm({ ...form, telefono: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field label="Email" id="c-email" className="flex-1">
-                  <Input
-                    id="c-email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                  />
-                </Field>
-              </div>
+              <Field label="Teléfono" id="c-tel">
+                <Input
+                  id="c-tel"
+                  value={form.telefono}
+                  onChange={(e) =>
+                    setForm({ ...form, telefono: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Email" id="c-email">
+                <Input
+                  id="c-email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm({ ...form, email: e.target.value })
+                  }
+                />
+              </Field>
               <Field label="Instagram (URL)" id="c-ig">
                 <Input
                   id="c-ig"

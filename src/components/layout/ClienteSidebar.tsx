@@ -29,7 +29,7 @@ const items: NavItem[] = [
  */
 export function ClienteSidebar() {
   return (
-    <aside className="hidden md:flex md:w-16 lg:w-56 shrink-0 flex-col border-r bg-background pt-2">
+    <aside className="hidden md:flex md:w-16 lg:w-56 shrink-0 flex-col border-r bg-background pt-2 sticky top-0 h-screen overflow-y-auto">
       {items.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}

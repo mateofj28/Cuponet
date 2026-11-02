@@ -47,7 +47,7 @@ export function AdminCreditos() {
   }
 
   return (
-    <Card>
+    <Card className="md:max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Coins className="size-4" />
@@ -69,6 +69,7 @@ export function AdminCreditos() {
               placeholder="100"
               value={monto}
               onChange={(e) => setMonto(e.target.value)}
+              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <Button type="submit" disabled={cargando}>
